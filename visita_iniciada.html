@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+
+    <head>
+
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>RTF</title>
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+        <link href="vendor/css/style.css" rel="stylesheet">
+        <!-- <link rel="manifest" href="manifest.json"> -->
+        <script src="js/jquery.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/dexie.js"></script>    
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+
+    </head>
+
+
+    <body>
+        <div id="loader" align="center" style="height:100vh;margin-top:10vh;display:none;">
+            <img src="images/loader.gif">  
+            <h6>Cargando...</h6>
+        </div>
+        
+        <!-- Logos -->
+        <div class="container text-center datos">
+            <div class="row" >
+                <div class="col-12" >
+                    <img src="xd/pestana_iniciada.png" class="img-fluid">
+                    <table style="height: 100px; width: 100%;" class="text-center">
+                        <tbody class="text-center">
+                            <tr >
+                                <td class="align-middle">
+                                    <br>
+                                    <h3>Clientes</h3>
+                                    <img src="xd/linea_azul.png" class="img-fluid">
+                                    <h4 id="titulo" class="" style="color: #004C99 !important;"></h4>
+                                    <script>
+                                        var nombre_tienda = localStorage.getItem('nombretienda'); 
+                                        document.getElementById('titulo').innerHTML = nombre_tienda; 
+                                    </script>    
+                                    <br>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Marcas -->
+        <div class="container visitainiciada">
+
+            <div class="col-12 text-center">
+                <p class="text-muted">Selecciona una cliente</p>
+                <br>
+            </div>
+
+            <div class="row text-center" id="lugarmarcas"></div>
+            <div class="col-12">
+                <br>
+            </div>
+            <div class="col-12 text-center">
+                <a id="btn_entregar_tienda" href="#" class="btn btn-info" onclick="finalizar()" >ENTREGAR UBICACIÓN</a>
+            </div>
+
+            <script>
+
+                //var id_rol = localStorage.getItem('idrol'); 
+                //var id_marca = localStorage.getItem('idmarca'); 
+                var id_tienda = localStorage.getItem('idtienda'); 
+                var id_ot = localStorage.getItem('idot'); 
+                var nombre_tienda = localStorage.getItem('nombretienda'); 
+                var nombre_tienda_var = "'"+nombre_tienda+"'";
+
+
+                var db = new Dexie("armenta");
+                db.version(1).stores({
+                    geouser : 'id, lat, long'
+                })
+
+                db.geouser.get(1).then(function (checkgeo) {
+
+
+                    var lat = checkgeo.lat;
+                    var long = checkgeo.long;
+                    var js3 = lat+"/"+long;
+
+
+                    //guardamos en mision la geo q esta en la bd
+                    var db = new Dexie("armenta");
+                    db.version(1).stores({
+                        misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                    });
+
+
+                    //antes de insertar primero vemos si ya existe en registro en misiones
+                    db.misiones.get({misionidordentrabajo:parseInt(id_ot)}).then(function (checkexist) { 
+
+                        if (checkexist){
+                            var id_mision = checkexist.mision_id;
+
+                            db.misiones.update(id_mision,{
+
+                                geoiniciomision : js3
+
+                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+                        }
+
+
+                    }).catch(function (error) {
+                        console.error(error);
+                    }); 
+
+
+
+
+                }).catch(function (error) {
+                    console.error(error);
+                }); 
+
+
+
+                var db = new Dexie("armenta");
+                db.version(1).stores({
+                    rolmaestromisiones : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida' 
+                });
+
+                /* buscamos la orden de trabajo en rol maestro para sacar las marcas */
+                db.rolmaestromisiones.where({rolidordentrabajo:parseInt(id_ot)}).each(function (despliega) {  
+
+                    var id_rol = despliega.rolmaestroid;
+                    var id_marca = despliega.rolmarcaid;
+
+                    var db = new Dexie("armenta");
+                    db.version(1).stores({
+                        marcas : 'marcaid, marclienteid, nombremarca, descripcionmarca, tipomarca, nomarca,incluyeinventario' 
+                    });
+
+                    /* buscamos datos marca */    
+                    db.marcas.get(id_marca).then(function (vert) {
+
+                        var nombre_marca_var = "'"+vert.nombremarca+"'";
+                        var nombre_marca_txt = vert.nombremarca;
+                        var incluye_inventario = vert.incluyeinventario;
+
+
+                        /*elementos*/
+                        var previewZone = document.getElementById('lugarmarcas');
+
+                        var divc2 = document.createElement('div');
+                        divc2.setAttribute("class", "col-2"); 
+                        previewZone.appendChild(divc2); 
+
+                        var divc8 = document.createElement('div');
+                        divc8.setAttribute("class", "col-8 text-center"); 
+                        previewZone.appendChild(divc8);
+
+                        var divc2b = document.createElement('div');
+                        divc2b.setAttribute("class", "col-2");
+                        previewZone.appendChild(divc2b); 
+
+                        var divc12 = document.createElement('div');
+                        divc12.setAttribute("class", "col-12");
+                        previewZone.appendChild(divc12); 
+
+                        var br  = document.createElement('br');
+                        divc12.appendChild(br);      
+
+
+                        //revisamos si ya se hicieron todos los objetivos de la marca
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            verificacionmarcas : 'idmarca, status' 
+                        });
+
+                        status_btn_entregar_marca  = new Array();
+
+                        db.verificacionmarcas.get(id_marca).then(function (check1) {
+                            var marca_terminada = check1.status; 
+
+                            if(marca_terminada == 'Si'){
+                                //agregamos resto de elementos para NO hacer marca
+                                var divcard = document.createElement('div');
+                                divcard.setAttribute("class", "card");     
+                                divc8.appendChild(divcard);
+
+                                var divcardbody = document.createElement('div');
+                                divcardbody.setAttribute("class", "card-body");     
+                                divcard.appendChild(divcardbody);
+
+                                var h5 = document.createElement('h5');
+                                h5.innerHTML = nombre_marca_txt;     
+                                divcardbody.appendChild(h5);
+
+                                var imgcheck = document.createElement('img');
+                                imgcheck.src = "xd/check.png";
+                                divcardbody.appendChild(imgcheck);
+
+                                status_btn_entregar_marca.push('Yes')//añade elemento al final
+                            }else{
+                                //agregamos resto de elementos para hacer marca
+                                var elema = document.createElement('a');
+                                elema.href = 'javascript:void(0)';  
+                                elema.style = "color: black;";
+                                elema.setAttribute("onclick", "simular_mision("+id_rol+","+id_marca+","+nombre_marca_var+","+id_ot+")");       
+                                divc8.appendChild(elema);
+
+                                var divcard = document.createElement('div');
+                                divcard.setAttribute("class", "card"); 
+                                if (incluye_inventario == 'si'){
+                                    divcard.setAttribute("style", "background-color:pink"); 
+                                }
+                                elema.appendChild(divcard);
+
+                                var divcardbody = document.createElement('div');
+                                divcardbody.setAttribute("class", "card-body");     
+                                divcard.appendChild(divcardbody);
+
+                                var h5 = document.createElement('h5');
+                                h5.innerHTML = nombre_marca_txt;     
+                                divcardbody.appendChild(h5);
+
+
+                                status_btn_entregar_marca.push('Nel')//añade elemento al final
+                            }  
+
+
+
+                            var salir = status_btn_entregar_marca.includes("Nel");//devuelve true or false
+
+                            if(salir == false){
+                                document.getElementById('btn_entregar_tienda').style = 'display:block';
+                            }else{
+                                document.getElementById('btn_entregar_tienda').style = 'display:none';
+                            }            
+
+
+                        }).catch(function (error) {
+                            console.error(error);
+                        });   
+
+
+                    }).catch(function (error) {
+                        console.error(error);
+                    });
+
+                }).catch(function (error) {
+                    console.error(error);
+                }); 
+
+            </script>
+
+
+
+        </div>
+
+        <!-- Navigation -->
+        <div class="container-fluid fixed-bottom menu">
+            <div class="row" style="">
+                <div id="btnpause" class="col-3 text-center" style="" onclick="openNav4()">
+                    <img src="xd/pausa.png" class="img-fluid"> 
+                </div>
+                <div id="btnplay" class="col-3 text-center" style="" onclick="openNav5()">
+                    <img src="xd/reiniciar.png" class="img-fluid"> 
+                </div>
+                <div class="col-3 text-center" style=" " onclick="openNav3()">
+                    <img src="xd/sos.png" class="img-fluid"> 
+                </div>
+                <div class="col-3 text-center active" style=" ">
+
+                    <img src="xd/objetivos.png" class="img-fluid"> 
+
+                </div>
+                <div class="col-3 text-center" style=" " onclick="openNav()" >
+                    <img src="xd/perfil.png" class="img-fluid"> 
+                </div>
+            </div>
+        </div>
+        <script>
+
+            var db = new Dexie("armenta");
+            db.version(1).stores({
+                misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+            });
+
+            //vemos si esta en pausa la mision
+            //var js1 = localStorage.getItem('idrol');
+            //var js2 = localStorage.getItem('idmarca');
+            var js3 = localStorage.getItem('idot'); 
+            db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkmission) {
+
+                var status = checkmission.status;
+                if (status == ""){
+                    document.getElementById('btnpause').style.display = "block";
+                    document.getElementById('btnplay').style.display = "none";
+                }else{
+                    document.getElementById('btnpause').style.display = "none";
+                    document.getElementById('btnplay').style.display = "block";
+                }
+
+            }).catch(function (error) {
+                console.error(error);
+            });     
+
+
+        </script>    
+
+
+
+        <!-- The Modal -->
+        <!-- Modal: modalAbandonedCart-->
+        <div class="modal fade right" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true" data-backdrop="static" data-keyboard="false" >
+            <div class="modal-dialog  " role="document">
+                <!--Content-->
+                <div class="modal-content">
+                    <!--Header-->
+
+
+                    <!--Body-->
+                    <div class="modal-body">
+
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h5>¡Aviso!</h5>
+                            </div>
+                            <div class="col-12 text-center">
+                                <p class="m-3">Estás entregando la ubicación</p>
+                                <a href="inicio.html"   class="btn btn-info" style="background: gray;">  ENTREGAR </a>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--Footer-->
+                    <div class="modal-footer justify-content-center">
+
+
+                    </div>
+                </div>
+                <!--/.Content-->
+            </div>
+        </div>
+        <!-- Modal: modalAbandonedCart-->
+
+        <script>
+            function finalizar(){
+                //var js1 = localStorage.getItem('idrol');
+                //var js2 = localStorage.getItem('idmarca');
+                var js3 = localStorage.getItem('idot');
+                var js4 = new Date();
+                var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+
+                //guardamos todo menos la geo
+                var db = new Dexie("armenta");
+                db.version(1).stores({
+                    misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                });
+                //buscamos el id de la mision para poder hacer update
+                db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkid) {
+                    var id_mission = checkid.mision_id;
+
+                    db.misiones.update(id_mission,{
+                        fechaentregamision : datestring,
+                        horaentregamision: js5,
+                     }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                    }).catch(function (error) {
+                        console.error(error);
+                    }); 
+
+
+                //buscamos la geo y la guardamos
+                navigator.geolocation.getCurrentPosition(guardarCoordenadas); 
+                function guardarCoordenadas(position) {
+                    var latitud =  position.coords.latitude;
+                    var longitud = position.coords.longitude;
+
+               
+                    //buscamos el id de la mision para poder hacer update
+                    db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkid_again) {
+                        var id_mission = checkid_again.mision_id;
+
+                        db.misiones.update(id_mission,{
+                            geoentregamision : latitud+'/'+longitud
+                        }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                    }).catch(function (error) {
+                        console.error(error);
+                    }); 
+
+                }
+
+                document.getElementById('loader').style.display = "block";
+                window.scrollTo(0, 0);
+                setTimeout(function(){
+
+                    document.getElementById('loader').style.display = "none";
+                    $('#myModal').modal({show:true});       
+                    //window.location.assign('inicio.html');
+                },3000);
+
+
+            }
+        </script>
+
+
+        <script>
+            function openNav() {
+                document.getElementById("myNav").style.width = "100%";
+            }
+
+            function closeNav() {
+                document.getElementById("myNav").style.width = "0%";
+            }
+
+            function openNav2() {
+                document.getElementById("myNav2").style.width = "100%";
+            }
+
+            function closeNav2() {
+                document.getElementById("myNav2").style.width = "0%";
+            }
+
+            function openNav3() {
+                document.getElementById("myNav3").style.width = "100%";
+            }
+
+            function closeNav3() {
+                document.getElementById("myNav3").style.width = "0%";
+            }
+
+            function openNav4() {
+                document.getElementById("myNav4").style.width = "100%";
+            }
+
+            function closeNav4() {
+                document.getElementById("myNav4").style.width = "0%";
+            }
+
+            function openNav5() {
+                document.getElementById("myNav5").style.width = "100%";
+            }
+
+            function closeNav5() {
+                document.getElementById("myNav5").style.width = "0%";
+            }
+
+        </script>
+        <script>
+            function simular_mision(dat1,dat2,dat3,dat4){
+
+                //primero vemos si no esta en pausa para que de reiniciar 
+
+                var db = new Dexie("armenta");
+                db.version(1).stores({
+                    misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                });
+                db.misiones.get({misionidordentrabajo:parseInt(dat4)}).then(function (checkifpause) {
+
+                    var status = checkifpause.status;
+                    if (status == ""){
+                        //nop
+
+                        localStorage.setItem('idrol', dat1); 
+                        localStorage.setItem('idmarca', dat2); 
+                        localStorage.setItem('nombremarca', dat3); 
+
+                        var identificadores = '';
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            relacionom : 'id, relacionomid, relacionommtcid, relacionomobjetivoid'
+                        });
+
+                        db.relacionom.where({relacionommtcid:parseInt(dat2)}).each(function (despliega) {
+
+                            //guardamos los id de objetivos encontrados
+                            if(identificadores == ''){
+                                identificadores = despliega.relacionomobjetivoid;
+                            }else{
+                                identificadores = identificadores+'/'+despliega.relacionomobjetivoid;    
+                            }
+                            localStorage.setItem('ids_objetivos', identificadores);             
+
+
+                        }).catch(function (error) {
+                            console.error(error);
+                        });
+
+
+
+                        document.getElementById('loader').style.display = "block";
+                        window.scrollTo(0, 0);
+                        setTimeout(function(){
+                            window.location.assign("visita_iniciada_obj.html");
+                        },3000);
+
+
+
+                    }else{
+                        //sip
+                        alert('Estás en pausa, primero reinicia');
+
+                    }
+
+                }).catch(function (error) {
+                    console.error(error);
+                });     
+
+            }
+        </script>
+        <!-- Menu Perfil-->
+        <div id="myNav" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div id="zona_elementos" class="card card-block" style="border: none; ">
+
+                                <script>
+                                    var user_n = localStorage.getItem('nombre_user');
+                                    var user_f = localStorage.getItem('foto_user');
+                                    var zona = document.getElementById('zona_elementos');
+
+                                    var elemh4 = document.createElement('h6');    
+                                    elemh4.style= 'color:white; background: black; padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;';
+                                    elemh4.innerHTML = user_n+" >> ";
+                                    zona.appendChild(elemh4); 
+
+                                    var elemimg = document.createElement('img');
+                                    elemimg.style= "width: 30vw;";
+                                    elemimg.src = 'data:image/jpg;base64,'+user_f;
+                                    elemimg.setAttribute("class", "img-fluid");    
+                                    elemh4.appendChild(elemimg);   
+
+
+                                </script>
+
+
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item cred"><a href="credencial.html">CREDENCIAL</a></li>
+                                    <li class="list-group-item hist"><a href="historial.html">HISTORIAL</a></li>
+                                    <li class="list-group-item prog"><a href="programa.html">PROGRAMADO</a></li>
+                                    <li class="list-group-item doc"><a href="documentos.html">DOCUMENTOS</a></li>
+                                    <li class="list-group-item clo"><a href="login.php">CERRAR SESIÓN</a></li>
+                                </ul>
+
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- sos-->
+        <div id="myNav3" class="overlay" style="background: rgba(0, 0, 0, 0.7);">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav3()">&times;</a>
+            <img src="xd/logo_sgm_bc.png" class="img-fluid logo_nav">
+
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="card card-block text-center" style="border: none; background: black;">
+                                <br>
+                                <p><img class="img-fluid"  alt="" src="xd/alerta.png" ></p>
+                                <h4 class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    SALIR POR CAUSA DE<br> FUERZA MAYOR </h4> 
+                                <p class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    Selecciona un evento y escribe<br> un comentario explicando.</p> 
+
+
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <select id="causa">
+                                            <option selected disabled>  Causa</option>
+                                            <option>Temblor</option>
+                                            <option>Simulacro</option>
+                                            <option>Enfermedad</option>
+                                            <option>Entrega de Carta</option>
+                                            <option>Sin fotos</option>
+                                            <option>Otro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <input id="comentario" type="text" class="textbox" >
+                                    </div>
+                                </div> 
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button onclick="sos()" class="btn btn-info" style="background: #EA2B2B; border: none;">Registrar Salida</button>
+                                        <br>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    function sos(){
+                                        
+                                        closeNav3();
+                                        
+                                        var jsA = document.getElementById('causa').value;
+                                        var jsB = document.getElementById('comentario').value;
+
+                                        //var js1 = localStorage.getItem('idrol');
+                                        //var js2 = localStorage.getItem('idmarca');
+                                        var js3 = localStorage.getItem('idot');
+                                        var js4 = new Date();
+                                        var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                                        var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+                                        var js6 = "P";
+
+                                        //cerramos la tienda
+
+                                        var db = new Dexie("armenta");
+                                        db.version(1).stores({
+                                            misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                                        });
+
+                                        //buscamos el id de la mision para poder hacer update
+                                        db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkout) {
+                                            var id_mission = checkout.mision_id;
+
+
+                                            db.misiones.update(id_mission,{
+                                                fechaentregamision : datestring,
+                                                horaentregamision: js5,
+                                                soscausa: jsA,
+                                                soscomentario: jsB
+                                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                                        }).catch(function (error) {
+                                            console.error(error);
+                                        }); 
+
+
+                                        document.getElementById('loader').style.display = "block";
+                                        window.scrollTo(0, 0);
+                                        setTimeout(function(){
+                                            window.location.assign('inicio.html');
+                                        },3000);
+
+
+                                    }
+                                </script>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Pausa-->
+        <div id="myNav4" class="overlay" style="background: rgba(0, 0, 0, 0.7);">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav4()">&times;</a>
+            <img src="xd/logo_sgm_bc.png" class="img-fluid logo_nav">
+
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="card card-block text-center" style="border: none; background: black;">
+                                <br>
+                                <p><img class="img-fluid"  alt="" src="xd/alerta.png" ></p>
+                                <h4 class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    PONER EN<br> PAUSA </h4> 
+                                <p class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    Selecciona una causa y escribe<br> un comentario explicando.</p> 
+
+
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <select id="pausa_causa">
+                                            <option selected disabled>  Causa</option>
+                                            <option>Comida</option>
+                                            <option>Malestar</option>
+                                            <option>Documentos</option>
+                                            <option>Otro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <input id="pausa_comentario" type="text" class="textbox" >
+                                    </div>
+                                </div> 
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button onclick="pausa()" class="btn btn-info" style="background: #EA2B2B; border: none;">Registrar Pausa</button>
+                                        <br>
+                                    </div>
+                                </div>
+                                <script>
+                                    function pausa(){
+                                        
+                                        closeNav4();
+                                        
+                                        var jsA = document.getElementById('pausa_causa').value;
+                                        var jsB = document.getElementById('pausa_comentario').value;
+
+                                        //var js1 = localStorage.getItem('idrol');
+                                        //var js2 = localStorage.getItem('idmarca');
+                                        var js3 = localStorage.getItem('idot');
+                                        var js4 = new Date();
+                                        var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                                        var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+                                        var js6 = "P";
+
+                                        //pausamos la tienda
+
+                                        var db = new Dexie("armenta");
+                                        db.version(1).stores({
+                                            misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                                        });
+
+                                        //buscamos el id de la mision para poder hacer update
+                                        db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkpause) {
+                                            var id_mission = checkpause.mision_id;
+                                            var oldpausedata = checkpause.pausasmision;
+                                            var oldcomments = checkpause.prcomentarios;
+
+                                            if (oldpausedata == ""){
+                                                var newpausedata = datestring+"-"+js5+"-"+jsA;
+                                            }else{
+                                                var newpausedata = oldpausedata+"/"+datestring+"-"+js5+"-"+jsA; 
+                                            }
+
+                                            if (oldcomments == ""){
+                                                var newcomments = "P:"+jsB;
+                                            }else{
+                                                var newcomments = oldcomments+"/P:"+jsB;
+                                            }
+
+                                            db.misiones.update(id_mission,{
+                                                pausasmision : newpausedata,
+                                                prcomentarios: newcomments,
+                                                status: "P"
+                                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                                        }).catch(function (error) {
+                                            console.error(error);
+                                        }); 
+
+
+                                        document.getElementById('loader').style.display = "block";
+                                        window.scrollTo(0, 0);
+                                        setTimeout(function(){
+                                            window.location.assign('visita_iniciada.html') ;
+                                        },3000);
+
+
+                                    }
+                                </script>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Reiniciar-->
+        <div id="myNav5" class="overlay" style="background: rgba(0, 0, 0, 0.7);">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav5()">&times;</a>
+            <img src="xd/logo_sgm_bc.png" class="img-fluid logo_nav">
+
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="card card-block text-center" style="border: none; background: black;">
+                                <br>
+                                <p><img class="img-fluid"  alt="" src="xd/alerta.png" ></p>
+                                <h4 class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    REINICIAR<br> MISIÓN </h4> 
+                                <p class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    Bienvenido de vuelta.</p> 
+
+
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <input id="play_comentario" type="text" class="textbox" >
+                                    </div>
+                                </div> 
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button onclick="play()" class="btn btn-info" style="background: #EA2B2B; border: none;">Reanudar Misión</button>
+                                        <br>
+                                    </div>
+                                </div>
+                                <script>
+                                    function play(){
+                                        
+                                        closeNav5();
+                                        
+                                        var jsB = document.getElementById('play_comentario').value;
+
+                                        //var js1 = localStorage.getItem('idrol');
+                                        //var js2 = localStorage.getItem('idmarca');
+                                        var js3 = localStorage.getItem('idot');
+                                        var js4 = new Date();
+                                        var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                                        var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+                                        var js6 = "P";
+
+                                        //reiniciamos la tienda
+
+                                        var db = new Dexie("armenta");
+                                        db.version(1).stores({
+                                            misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                                        });
+
+                                        //buscamos el id de la mision para poder hacer update
+                                        db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkplay) {
+
+                                            var id_mission = checkplay.mision_id;
+                                            var oldplaydata = checkplay.reiniciosmision;
+                                            var oldcomments = checkplay.prcomentarios;
+
+                                            if (oldplaydata == ""){
+                                                var newplaydata = datestring+"-"+js5;
+                                            }else{
+                                                var newplaydata = oldplaydata+"/"+datestring+"-"+js5; 
+                                            }
+
+                                            if (oldcomments == ""){
+                                                var newcomments = "R:"+jsB;
+                                            }else{
+                                                var newcomments = oldcomments+"/R:"+jsB;
+                                            }
+
+                                            db.misiones.update(id_mission,{
+                                                reiniciosmision : newplaydata,
+                                                prcomentarios: newcomments,
+                                                status: ""
+                                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                                        }).catch(function (error) {
+                                            console.error(error);
+                                        }); 
+
+
+                                        document.getElementById('loader').style.display = "block";
+                                        window.scrollTo(0, 0);
+                                        setTimeout(function(){
+                                            window.location.assign('visita_iniciada.html');
+                                        },3000);
+
+
+                                    }
+                                </script>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+
+</html>

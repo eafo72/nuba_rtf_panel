@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+
+    <head>
+
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>RTF Usuario Perfil</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap-grid.min.css">
+
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+        <link href="vendor/css/style.css" rel="stylesheet">
+        <!-- <link rel="manifest" href="manifest.json"> -->
+        <script src="js/jquery.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/dexie.js"></script>    
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+
+
+
+    </head>
+
+    <body>
+
+        <!-- top perfil -->
+        <div class="container text-center datos">
+            <img src="xd/perfil_bco.png" class="img-fluid" id="miperfil">
+            <div class="row" >
+                <table style="height: 100px; width: 100%;" class="text-center credencial">
+                    <tbody class="text-center">
+                        <tr >
+                            <td class="align-middle">
+                                <h3>Credencial <br> <span style="font-size: .8em; border-top: solid 1px white;">promotor</span></h3>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Contenido -->
+        <div class="container contenido">
+            <div class="row text-center">
+
+
+                <div id="zona_datos" class="col-12 "  >  
+                
+                    
+                    <script>
+                        var user_n = localStorage.getItem('nombre_user');
+                        var user_a = localStorage.getItem('direccion_user');
+                        var user_f = localStorage.getItem('foto_user');
+                        
+                        var zone = document.getElementById('zona_datos');
+                        
+                        var elemh4 = document.createElement('h4');    
+                        elemh4.style= 'color: #004C99 !important;';
+                        elemh4.setAttribute("class", "m-2 mt-4");    
+                        elemh4.innerHTML = user_n;
+                        zone.appendChild(elemh4);   
+                        
+                        var elemimg = document.createElement('img');    
+                        elemimg.src = 'data:image/jpg;base64,'+user_f;
+                        elemimg.setAttribute("class", "img-fluid");    
+                        zone.appendChild(elemimg);   
+                        
+                        var elemh4B = document.createElement('h4');    
+                        elemh4B.style= 'color: #004C99 !important;';
+                        elemh4B.setAttribute("class", "m-2 mt-4");    
+                        elemh4B.innerHTML = 'RTF';
+                        zone.appendChild(elemh4B); 
+                        
+                        var elemp = document.createElement('p');    
+                        elemp.innerHTML = user_a;
+                        zone.appendChild(elemp); 
+                
+                        
+                    </script>    
+
+
+                    
+
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="container-fluid fixed-bottom menu">
+            <div class="row" style="">
+                <div class="col-3 text-center" style=" ">
+                    <a href="precargado_tiendas.html">         
+                        <img src="xd/tiendas.png" class="img-fluid"> 
+                    </a> 
+                </div>
+                <div class="col-3 text-center" style=" ">
+                    <img src="xd/sos.png" class="img-fluid"> 
+                </div>
+                <div class="col-3 text-center " style=" ">
+                    <a href="inicio.html">
+                        <img src="xd/objetivos.png" class="img-fluid"> 
+                    </a>
+                </div>
+                <div class="col-3 text-center active" style=" " onclick="openNav()">
+                    <img src="xd/perfil.png" class="img-fluid"> 
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openNav() {
+                document.getElementById("myNav").style.width = "100%";
+            }
+
+            function closeNav() {
+                document.getElementById("myNav").style.width = "0%";
+            }
+        </script>
+
+        <!-- Menu Perfil-->
+        <div id="myNav" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <img src="xd/logo_sgm_bc.png" class="img-fluid logo_nav">
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div id="zona_elementos" class="card card-block" style="border: none; ">
+                                                                
+                                <script>
+                                    var user_n = localStorage.getItem('nombre_user');
+                                    var user_f = localStorage.getItem('foto_user');
+                                    var zona = document.getElementById('zona_elementos');
+                                    
+                                    var elemh4 = document.createElement('h6');    
+                                    elemh4.style= 'color:white; background: black; padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;';
+                                    elemh4.innerHTML = user_n+" >> ";
+                                    zona.appendChild(elemh4); 
+                                    
+                                    var elemimg = document.createElement('img');
+                                    elemimg.style= "width: 30vw;";
+                                    elemimg.src = 'data:image/jpg;base64,'+user_f;
+                                    elemimg.setAttribute("class", "img-fluid");    
+                                    elemh4.appendChild(elemimg);   
+                                
+                                
+                                </script>
+                                
+
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item cred"><a href="credencial.html">CREDENCIAL</a></li>
+                                    <li class="list-group-item hist"><a href="historial.html">HISTORIAL</a></li>
+                                    <li class="list-group-item prog"><a href="programa.html">PROGRAMADO</a></li>
+                                    <li class="list-group-item doc"><a href="documentos.html">DOCUMENTOS</a></li>
+                                    <li class="list-group-item clo"><a href="login.php">CERRAR SESIÓN</a></li>
+                                </ul>
+
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+
+</html>

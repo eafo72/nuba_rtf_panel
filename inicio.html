@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="es">
+
+    <head>
+
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>RTF</title>
+
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap-grid.min.css">
+
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+        <link href="vendor/css/style.css" rel="stylesheet">
+        <!-- <link rel="manifest" href="manifest.json"> -->
+        <script src="js/jquery.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/dexie.js"></script>    
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+
+    </head>
+
+    <body id="inicio">
+
+        <div id="loader" align="center" style="height:100vh;margin-top:10vh;display:none;">
+            <img src="images/loader.gif">  
+            <h6>Cargando...</h6>
+        </div>
+
+        <!-- Logos -->
+        <div class="container">
+            <br>
+            <div class="row">
+                <div class="col-6 text-center">
+                    <img src="assets/images/logo_nubartforms.jpeg" class="img-fluid logo_index">
+                </div>
+                <div class="col-6 text-center">
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="container bienvenida">
+            <br>
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div id="btn_bd"></div>
+                    <br>
+                    <h3 class="m-2 mt-4">!Ten un excelente día!</h3>
+                    <p class="lead">Estas son tus misiones de hoy</p>
+                    <p id="titulo_fecha"></p>
+                </div>
+            </div>
+            <br>
+        </div>
+
+        <div class="container contenido">
+
+            <!-- cards por mision -->
+            <div id="lugarmisiones"></div>
+
+            <script>
+                var id_usuario = localStorage.getItem('id_user');
+                if (id_usuario == null || id_usuario == undefined){
+                    alert('ERROR, Se perdió la sesión');
+                    window.location.assign('login.php');
+                }
+
+                var btnbd = document.getElementById('btn_bd');
+
+                var btn_a = document.createElement('a');    
+                btn_a.href = "bajar_bd.php?id="+id_usuario;
+                btn_a.setAttribute("class", "btn btn-danger");
+                btnbd.appendChild(btn_a);
+
+                var sinc_icon = document.createElement('i');    
+                sinc_icon.setAttribute("class", "fa fa-check");
+                btn_a.appendChild(sinc_icon);
+
+                var newContent = document.createTextNode(" CheckIn"); 
+                btn_a.appendChild(newContent); 
+
+
+
+                //hoy
+                var hoy = new Date();
+                var var_hoy = hoy.getFullYear() + "-" + ("0"+(hoy.getMonth()+1)).slice(-2) + "-" + ("0" + hoy.getDate()).slice(-2);
+
+                var mes_numero = hoy.getMonth();
+                if(mes_numero == 0){
+                    mes_letra = 'Enero';
+                }if(mes_numero == 1){
+                    mes_letra = 'Febrero';
+                }if(mes_numero == 2){
+                    mes_letra = 'Marzo';
+                }if(mes_numero == 3){
+                    mes_letra = 'Abril';
+                }if(mes_numero == 4){
+                    mes_letra = 'Mayo';
+                }if(mes_numero == 5){
+                    mes_letra = 'Junio';
+                }if(mes_numero == 6){
+                    mes_letra = 'Julio';
+                }if(mes_numero == 7){
+                    mes_letra = 'Agosto';
+                }if(mes_numero == 8){
+                    mes_letra = 'Septiembre';
+                }if(mes_numero == 9){
+                    mes_letra = 'Octubre';
+                }if(mes_numero == 10){
+                    mes_letra = 'Noviembre';
+                }if(mes_numero == 11){
+                    mes_letra = 'Diciembre';
+                }
+
+                var fecha_letra = ("0" + hoy.getDate()).slice(-2)+ " de "+mes_letra+" " + hoy.getFullYear();
+
+                var title_date = document.getElementById('titulo_fecha');
+                title_date.innerHTML = fecha_letra;
+
+                var db = new Dexie("armenta");
+                db.version(1).stores({
+                    rolmaestromisionesUNIQUE : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida' 
+                });
+
+                /* buscamos roles del colaborador */ db.rolmaestromisionesUNIQUE.where({colaboradoridasignadorol:parseInt(id_usuario), fechayhorasubida:"0000-00-00 00:00:00", fechaprogramadavisitarol:var_hoy}).each(function (despliega) {  
+
+                    var id_rol_maestro = despliega.rolmaestroid;
+                    var id_marca = despliega.rolmarcaid;
+                    var id_tienda = despliega.rolidtienda;
+                    var id_ot = despliega.rolidordentrabajo;
+
+                    var db = new Dexie("armenta");
+                    db.version(1).stores({
+                        tienda : 'tiendaid, nombretienda, ubicaciontienda, geotienda, encargadotienda, documentoslista, cadenaidtienda' 
+                    });
+
+                    /* buscamos datos tienda */    
+                    db.tienda.get(id_tienda).then(function (vert) {
+
+                        var nombre_tienda_var = "'"+vert.nombretienda+"'";
+                        var nombre_tienda_txt = vert.nombretienda;
+                        var direccion_tienda = vert.ubicaciontienda;
+                        var geotienda = "'"+vert.geotienda+"'";
+
+
+                        /*buscamos en misiones si ya se hizo*/
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                        })
+                        db.misiones.get({misionidordentrabajo:id_ot}).then(function (view1) {
+
+                            //si se encontro 
+                            if (view1){
+
+                                var fecha_entrega = view1.fechaentregamision;
+
+                                if (fecha_entrega == ""){
+                                    //creamos los elementos para hacer tienda
+                                    var previewZone = document.getElementById('lugarmisiones');
+
+                                    var elemrow = document.createElement('div');    
+                                    elemrow.setAttribute("class", "row");    
+                                    previewZone.appendChild(elemrow);
+
+                                    var elemcol12 = document.createElement('div');    
+                                    elemcol12.setAttribute("class", "col-12");    
+                                    elemrow.appendChild(elemcol12);
+
+                                    var elemcard = document.createElement('div');    
+                                    elemcard.setAttribute("class", "card");    
+                                    elemcol12.appendChild(elemcard);
+
+                                    var elembr = document.createElement('br');    
+                                    elemcol12.appendChild(elembr);
+
+                                    var elemgutt = document.createElement('div');    
+                                    elemgutt.setAttribute("class", "row no-gutters");    
+                                    elemcard.appendChild(elemgutt);
+
+                                    var elemfoot = document.createElement('div');    
+                                    elemfoot.setAttribute("class", "card-footer text-center w-100 text-muted");    
+                                    elemcard.appendChild(elemfoot);
+
+                                    var elematt = document.createElement('a');    
+                                    elematt.href = "javascript:void(0)";
+                                    elematt.setAttribute("onclick", "datos_tienda("+geotienda+","+id_tienda+","+nombre_tienda_var+")");
+                                    elemfoot.appendChild(elematt);
+
+                                    var elemparr = document.createElement('p');    
+                                    elemparr.innerHTML = "Ver ubicación";
+                                    elematt.appendChild(elemparr);
+
+                                    var elemcol = document.createElement('div');    
+                                    elemcol.setAttribute("class", "col");    
+                                    elemgutt.appendChild(elemcol);
+
+                                    var elemcardblock = document.createElement('div');    
+                                    elemcardblock.setAttribute("class", "card-block px-2 m-2");    
+                                    elemcol.appendChild(elemcardblock);
+
+                                    var elemh5 = document.createElement('h5');    
+                                    elemh5.style= 'color: #004C99 !important;';
+                                    elemh5.setAttribute("class", "card-title");    
+                                    elemh5.innerHTML = nombre_tienda_txt;
+                                    elemcardblock.appendChild(elemh5);   
+
+                                    var elemp = document.createElement('p');    
+                                    elemp.innerHTML = direccion_tienda;
+                                    elemp.setAttribute("class", "card-text");    
+                                    elemcardblock.appendChild(elemp);   
+
+                                    var elemcolauto = document.createElement('div');    
+                                    elemcolauto.setAttribute("class", "col-auto");    
+                                    elemgutt.appendChild(elemcolauto);
+
+                                    var elema = document.createElement('a');    
+                                    elema.href = 'javascript:void(0)';  
+                                    elema.setAttribute("onclick", "simular_mision("+id_rol_maestro+","+id_marca+","+id_tienda+","+id_ot+","+nombre_tienda_var+","+geotienda+")");
+
+
+
+                                    elemcolauto.appendChild(elema);
+
+                                    var elemimg = document.createElement('img');
+                                    elemimg.id = "imagen_link";
+                                    elemimg.src = "xd/card_right.png";
+                                    elemimg.setAttribute("class", "img-fluid");    
+                                    elema.appendChild(elemimg);    
+
+
+                                }else{
+
+
+                                    //creamos los elementos para subir datos
+                                    var previewZone = document.getElementById('lugarmisiones');
+
+                                    var elemrow = document.createElement('div');    
+                                    elemrow.setAttribute("class", "row");    
+                                    previewZone.appendChild(elemrow);
+
+
+                                    var elemcol12 = document.createElement('div');    
+                                    elemcol12.setAttribute("class", "col-12");    
+                                    elemrow.appendChild(elemcol12);
+
+                                    var elemcard = document.createElement('div');    
+                                    elemcard.setAttribute("class", "card");    
+                                    elemcol12.appendChild(elemcard);
+
+                                    var elembr = document.createElement('br');    
+                                    elemcol12.appendChild(elembr);
+
+                                    var elemgutt = document.createElement('div');    
+                                    elemgutt.setAttribute("class", "row no-gutters");    
+                                    elemcard.appendChild(elemgutt);
+
+                                    var elemfoot = document.createElement('div');    
+                                    elemfoot.setAttribute("class", "card-footer text-center w-100 text-muted");    
+                                    elemcard.appendChild(elemfoot);
+
+                                    var elematt = document.createElement('a');    
+                                    elematt.href = "javascript:void(0)";
+                                    elematt.setAttribute("onclick", "datos_tienda("+geotienda+","+id_tienda+","+nombre_tienda_var+")");
+                                    elemfoot.appendChild(elematt);
+
+                                    var elemparr = document.createElement('p');    
+                                    elemparr.innerHTML = "Ver ubicación y marcas objetivo";
+                                    elematt.appendChild(elemparr);
+
+                                    var elemcol = document.createElement('div');    
+                                    elemcol.setAttribute("class", "col");    
+                                    elemgutt.appendChild(elemcol);
+
+                                    var elemcardblock = document.createElement('div');    
+                                    elemcardblock.setAttribute("class", "card-block px-2 m-2");    
+                                    elemcol.appendChild(elemcardblock);
+
+                                    var elemh5 = document.createElement('h5');    
+                                    elemh5.style= 'color: #004C99 !important;';
+                                    elemh5.setAttribute("class", "card-title");    
+                                    elemh5.innerHTML = nombre_tienda_txt;
+                                    elemcardblock.appendChild(elemh5);   
+
+                                    var elemp = document.createElement('p');    
+                                    elemp.innerHTML = direccion_tienda;
+                                    elemp.setAttribute("class", "card-text");    
+                                    elemcardblock.appendChild(elemp);   
+
+                                    var elemcolauto = document.createElement('div');    
+                                    elemcolauto.setAttribute("class", "col-auto");    
+                                    elemgutt.appendChild(elemcolauto);
+
+                                    var elema = document.createElement('a');    
+                                    elema.href = 'javascript:void(0)';  
+                                    elema.setAttribute("onclick", "subir_mision("+id_ot+")");
+                                    elemcolauto.appendChild(elema);
+
+                                    var elemimg = document.createElement('img');
+                                    elemimg.id = "imagen_link";
+                                    elemimg.src = "xd/card_up.png";
+                                    elemimg.setAttribute("class", "img-fluid");    
+                                    elema.appendChild(elemimg);
+
+
+                                }  
+
+                            }else{
+                                //osea q no ha entrado ala tienda
+                                //creamos los elementos para hacer tienda
+                                var previewZone = document.getElementById('lugarmisiones');
+
+                                var elemrow = document.createElement('div');    
+                                elemrow.setAttribute("class", "row");    
+                                previewZone.appendChild(elemrow);
+
+
+                                var elemcol12 = document.createElement('div');    
+                                elemcol12.setAttribute("class", "col-12");    
+                                elemrow.appendChild(elemcol12);
+
+                                var elemcard = document.createElement('div');    
+                                elemcard.setAttribute("class", "card");    
+                                elemcol12.appendChild(elemcard);
+
+                                var elembr = document.createElement('br');    
+                                elemcol12.appendChild(elembr);
+
+                                var elemgutt = document.createElement('div');    
+                                elemgutt.setAttribute("class", "row no-gutters");    
+                                elemcard.appendChild(elemgutt);
+
+                                var elemfoot = document.createElement('div');    
+                                elemfoot.setAttribute("class", "card-footer text-center w-100 text-muted");    
+                                elemcard.appendChild(elemfoot);
+
+                                var elematt = document.createElement('a');    
+                                elematt.href = "javascript:void(0)";
+                                elematt.setAttribute("onclick", "datos_tienda("+geotienda+","+id_tienda+","+nombre_tienda_var+")");
+
+                                elemfoot.appendChild(elematt);
+
+                                var elemparr = document.createElement('p');    
+                                elemparr.innerHTML = "Ver ubicación y marcas objetivo";
+                                elematt.appendChild(elemparr);
+
+
+
+                                var elemcol = document.createElement('div');    
+                                elemcol.setAttribute("class", "col");    
+                                elemgutt.appendChild(elemcol);
+
+                                var elemcardblock = document.createElement('div');    
+                                elemcardblock.setAttribute("class", "card-block px-2 m-2");    
+                                elemcol.appendChild(elemcardblock);
+
+                                var elemh5 = document.createElement('h5');    
+                                elemh5.style= 'color: #004C99 !important;';
+                                elemh5.setAttribute("class", "card-title");    
+                                elemh5.innerHTML = nombre_tienda_txt;
+                                elemcardblock.appendChild(elemh5);   
+
+                                var elemp = document.createElement('p');    
+                                elemp.innerHTML = direccion_tienda;
+                                elemp.setAttribute("class", "card-text");    
+                                elemcardblock.appendChild(elemp);   
+
+                                var elemcolauto = document.createElement('div');    
+                                elemcolauto.setAttribute("class", "col-auto");    
+                                elemgutt.appendChild(elemcolauto);
+
+                                var elema = document.createElement('a');    
+                                elema.href = 'javascript:void(0)';  
+                                elema.setAttribute("onclick", "simular_mision("+id_rol_maestro+","+id_marca+","+id_tienda+","+id_ot+","+nombre_tienda_var+","+geotienda+")");
+                                elemcolauto.appendChild(elema);
+
+                                var elemimg = document.createElement('img');
+                                elemimg.id = "imagen_link";
+                                elemimg.src = "xd/card_right.png";
+                                elemimg.setAttribute("class", "img-fluid");    
+                                elema.appendChild(elemimg);    
+
+                            }
+
+                        }).catch(function (error) {
+                            console.error(error);
+                        });     
+
+                    }).catch(function (error) {
+                        console.error(error);
+                    });
+
+                }).catch(function (error) {
+                    console.error(error);
+                }); 
+
+            </script>                        
+        </div>
+        <!-- Navigation -->
+        <div class="container-fluid fixed-bottom menu">
+            <div class="row" style="">
+                <div class="col-3 text-center" style=" ">
+                    <a href="precargado_tiendas.html">         
+                        <img src="xd/tiendas.png" class="img-fluid"> 
+                    </a> 
+                </div>
+                <div class="col-3 text-center">
+                    <img src="xd/sos.png" class="img-fluid" style="opacity:.5;"> 
+                </div>
+                <div class="col-3 text-center active" style=" ">
+                    <img src="xd/objetivos.png" class="img-fluid"> 
+                </div>
+                <div class="col-3 text-center" style=" " onclick="openNav()">
+                    <img src="xd/perfil.png" class="img-fluid"> 
+                </div>
+            </div>
+        </div>
+        <div class="modal fade right" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog  " role="document">
+                <!--Content-->
+                <div class="modal-content">
+                    <!--Header-->
+
+                    <!--Body-->
+                    <div class="modal-body">
+
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h5>¡Que bien que ya llegaste!</h5>
+                            </div>
+                            <div class="col-12 text-center">
+                                <p class="m-3">Recuerda que debes <span style=" color: black;
+                                    font-weight: bolder;  text-decoration: underline;"> ACTIVAR TU UBICACIÓN</span> para poder continuar.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--Footer-->
+                    <div class="modal-footer justify-content-center">
+                        <a href="#"  onclick="myFunction()" class="btn btn-info">INICIAR VISITA</a> 
+
+                    </div>
+                </div>
+                <!--/.Content-->
+            </div>
+        </div>
+
+
+
+        <!-- Modal: modalAbandonedCart-->
+        <script>
+            function myFunction() {
+                window.location.assign("visita_iniciada.html");  
+            }
+        </script>
+        <script>
+            function openNav() {
+                document.getElementById("myNav").style.width = "100%";
+            }
+
+            function closeNav() {
+                document.getElementById("myNav").style.width = "0%";
+            }
+
+            function openNav3() {
+                document.getElementById("myNav3").style.width = "100%";
+            }
+
+            function closeNav3() {
+                document.getElementById("myNav3").style.width = "0%";
+            }
+        </script>
+        <script>
+            function datos_tienda(dat1,dat3,dat5){
+
+                localStorage.setItem('geotienda', dat1); 
+                localStorage.setItem('idtienda', dat3); 
+                localStorage.setItem('nombretienda', dat5); 
+
+                document.getElementById('loader').style.display = "block";
+                window.scrollTo(0, 0);
+                setTimeout(function(){
+                    window.location.assign("datos_tienda.html");
+                },3000);
+
+            }
+
+        </script>
+        <script>
+            function simular_mision(dat1,dat2,dat3,dat4,dat5,dat6){
+                //revisamos si esta activa la sesion por si borro datos de navegacion
+                var id_usuario = localStorage.getItem('id_user');
+                if (id_usuario == null || id_usuario == undefined){
+                    alert('ERROR, Se perdió la sesión');
+                    window.location.assign('login.php');
+                }
+
+
+                //buscamos la geo y la guardamos
+                if (navigator.geolocation) {    
+                    navigator.geolocation.getCurrentPosition(guardarCoordenadas, error); 
+                    async function guardarCoordenadas(position) {
+                        //funcion para calcular distancia entre 2 lat
+                        function Dist(lat1, lon1, lat2, lon2) {
+                            rad = function (x) {
+                                return x * Math.PI / 180;
+                            }
+
+                            var R = 6378.137;//Radio de la tierra en km
+                            var dLat = rad(lat2 - lat1);
+                            var dLong = rad(lon2 - lon1);
+                            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLong / 2) * Math.sin(dLong / 2);
+                            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                            var d = R * c;
+                            return d.toFixed(3);//Retorna tres decimales
+                        }
+
+
+
+                        //latitud y longitud usuario
+                        var latitud =  position.coords.latitude;
+                        var longitud = position.coords.longitude;
+
+                        //latitud y longitud de la tienda
+                        var combogeotienda = dat6.split(",");
+                        var lat_tienda = combogeotienda[0];
+                        var long_tienda = combogeotienda[1];     
+
+                        Distancia = Dist(latitud, longitud, lat_tienda, long_tienda);//Retorna numero en Km
+
+                        if (Distancia > .200){
+                            alert ('Estas a '+Distancia+'km de la tienda');
+                        }
+
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            geouser : 'id, lat, long'
+                        })
+
+                        await db.geouser.update(1,{
+                            lat : latitud,
+                            long : longitud
+                        }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                        //damos de alta la mision (entrada a la tienda)
+                        var js1 = new Date();
+                        var datestring = js1.getFullYear() + "-" + ("0"+(js1.getMonth()+1)).slice(-2) + "-" + ("0" + js1.getDate()).slice(-2);
+
+                        var js2 = js1.getHours() + ":" + js1.getMinutes() + ":" + js1.getSeconds();
+
+
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                        });
+
+                        //antes de insertar primero vemos si ya existe en registro en misiones
+                        db.misiones.get({misionidordentrabajo:parseInt(dat4)}).then(function (checkexist) { 
+
+                            if (checkexist){
+                                var id_mision = checkexist.mision_id;
+
+                                //si existe
+                                db.misiones.update(id_mision,{
+                                    misionidordentrabajo: dat4,
+                                    fechainiciomision : datestring,
+                                    horainiciomision : js2,
+                                    geoiniciomision : "",
+                                    pausasmision : "",
+                                    reiniciosmision : "",
+                                    prcomentarios: "",
+                                    fechaentregamision : "",
+                                    soscausa : "",
+                                    soscomentario : "",
+                                    status : ""
+                                }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+                            }else{
+                                //no existe
+                                var db = new Dexie("armenta");
+                                db.version(1).stores({
+                                    misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                                });
+                                db.misiones.put({
+									misionrol_maestroid:dat1,
+									misionidmarca:dat2,
+                                    misionidordentrabajo: dat4,
+                                    fechainiciomision : datestring,
+                                    horainiciomision : js2,
+                                    geoiniciomision : "",
+                                    pausasmision : "",
+                                    reiniciosmision : "",
+                                    prcomentarios: "",
+                                    fechaentregamision : "",
+                                    soscausa : "",
+                                    soscomentario : "",
+                                    status : ""
+                                }).catch(function(error) {alert ("Ooops: " + error);}); 
+                            }
+                        }).catch(function (error) {
+                            console.error(error);
+                        });     
+
+                        //localStorage.setItem('idrol', dat1); 
+                        //localStorage.setItem('idmarca', dat2); 
+                        localStorage.setItem('idtienda', dat3); 
+                        localStorage.setItem('idot', dat4); 
+                        localStorage.setItem('nombretienda', dat5); 
+
+                        //aqui entrando guardamos en verificacionmarcas si ya se hicieron los objetivos antes de abrir visitainiciada para tenerlo antes
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            rolmaestromisiones : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida' 
+                        });
+
+                        /* buscamos la orden de trabajo en rol maestro para sacar las marcas */
+                        db.rolmaestromisiones.where({rolidordentrabajo:parseInt(dat4)}).each(function (vw1) { 
+                            var id_rol = vw1.rolmaestroid;
+                            var id_marca = vw1.rolmarcaid;
+
+                            //buscamos sus objetivos
+                            var db = new Dexie("armenta");
+                            db.version(1).stores({
+                                relacionom : 'id, relacionomid, relacionommtcid, relacionomobjetivoid'
+                            });
+
+                            status_boton_marca = new Array();
+
+                            db.relacionom.where({relacionommtcid:parseInt(id_marca)}).each(function (vw2) {
+                                var id_obj = vw2.relacionomobjetivoid;
+
+                                var db = new Dexie("armenta");
+                                db.version(1).stores({
+                                    entregable : '++entrega_id, entregarolid, entrega_nombre_elemento, entrega_tipo_texto, entrega_tipo_numero, entrega_tipo_fecha, entrega_tipo_hora, entrega_tipo_imagen, entrega_fecha_llegada, entrega_hora_llegada, entregaobjetivoid, entregahoracierre, entregafechacierre, meta_venta' 
+                                });
+
+                                db.entregable.get({entregarolid:parseInt(id_rol),entregaobjetivoid:id_obj}).then(function (vw3) {
+
+                                    if (vw3){
+                                        status_boton_marca.push('Si')//añade elemento al final
+                                    }else{
+                                        status_boton_marca.push('No')//añade elemento al final
+                                    }
+
+                                    //revisamos si hubo un no en el arreglo de los objetivos realizados             
+                                    var activo = status_boton_marca.includes("No");//devuelve true or false
+
+                                    if(activo == false){
+
+                                        //entregada
+
+                                        var db = new Dexie("armenta");
+                                        db.version(1).stores({
+                                            verificacionmarcas : 'idmarca, status' 
+                                        });
+
+                                        db.verificacionmarcas.put({
+                                            idmarca : id_marca,
+                                            status : "Si"
+                                        }).catch(function(error) {alert ("Ooops: " + error);});  
+
+
+                                    }else{
+
+                                        //no entregada    
+
+                                        var db = new Dexie("armenta");
+                                        db.version(1).stores({
+                                            verificacionmarcas : 'idmarca, status' 
+                                        });    
+
+                                        db.verificacionmarcas.put({
+                                            idmarca : id_marca,
+                                            status : "No"
+                                        }).catch(function(error) {alert ("Ooops: " + error);});   
+
+                                    }  
+
+
+                                }).catch(function (error) {
+                                    console.error(error);
+                                }); 
+
+                            }).catch(function (error) {
+                                console.error(error);
+                            });  
+                        }).catch(function (error) {
+                            console.error(error);
+                        });  
+
+
+                        document.getElementById('loader').style.display = "block";
+                        window.scrollTo(0, 0);
+                        setTimeout(function(){
+                            document.getElementById('loader').style.display = "none";
+                            $('#myModal').modal({show:true});   
+
+                            //window.location.assign("visita_iniciada.html");
+                        },3000);
+
+                    }
+                    async function error() {
+                        alert('Debes activar la geolocalizacion para poder continuar, BORRA tu historial e inténtalo nuevamente');
+
+                    }
+
+                }else {
+                    alert("La Geolocalización no es soportada por este navegador");
+                }
+
+
+
+
+            }
+        </script>
+        <script>
+            function subir_mision(dat4){
+                //dat4 =  idot
+                alert('Estás subiendo tu información, recuerda encender tus datos o conectarte a una red WIFI');
+
+                //revisamos si esta en linea
+                if(navigator.onLine){  
+
+
+                    //buscamos todos los id de rol que hay q subir atraves de la ot q tienen en comun
+                    //guardamos la fecha y hora de subida y la geo
+                    var db = new Dexie("armenta");
+                    db.version(1).stores({
+                        rolmaestromisiones : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida' 
+                    });
+
+                    //buscamos los entregables
+                    db.rolmaestromisiones.where({rolidordentrabajo:parseInt(dat4)}).each(function (cadarol) {
+
+                        var rol_id = cadarol.rolmaestroid;
+
+
+
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            entregable : '++entrega_id, entregarolid, entrega_nombre_elemento, entrega_tipo_texto, entrega_tipo_numero, entrega_tipo_fecha, entrega_tipo_hora, entrega_tipo_imagen, entrega_fecha_llegada, entrega_hora_llegada, entregaobjetivoid, entregahoracierre, entregafechacierre, meta_venta'
+
+                        });
+                        //buscamos los entregables
+                        db.entregable.where({entregarolid:parseInt(rol_id)}).each(function (vw4) {
+
+                            var js1 = vw4.entregarolid;
+                            var js2 = vw4.entrega_nombre_elemento;
+                            var js3 = vw4.entrega_tipo_texto;
+                            var js4 = vw4.entrega_tipo_numero;
+                            var js5 = vw4.entrega_tipo_fecha;    
+                            var js6 = vw4.entrega_tipo_hora;
+                            var js7 = vw4.entrega_tipo_imagen;    
+                            var js8 = vw4.entrega_fecha_llegada;            
+                            var js9 = vw4.entrega_hora_llegada;
+                            var js10 = vw4.entregaobjetivoid;
+                            var js11 = vw4.entregahoracierre;
+                            var js12 = vw4.entregafechacierre;
+
+                            //para q no ponga vacios
+                            if(js1 != 0){
+                                $.ajax({
+                                    type: "POST",
+                                    url: 'sincronizar_entregable.php',
+                                    data:  {dat1: js1, dat2: js2, dat3: js3, dat4: js4, dat5: js5, dat6: js6, dat7: js7, dat8: js8, dat9: js9, dat10: js10, dat11: js11, dat12: js12},
+                                    success: function(resp){
+
+                                    }
+                                });    
+                            }
+
+                        }).catch(function (error) {
+                            console.error(error);
+                        });  
+
+
+                        //guardamos la fecha y hora de subida y la geo
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            rolmaestromisiones : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida' 
+                        });
+
+                        var d1 = new Date().toLocaleString()
+
+
+                        db.rolmaestromisiones.update(parseInt(rol_id),{
+                            fechayhorasubida : d1
+                        }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                        //guardamos la fecha y hora de subida y la geo EN UNIQUE
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            rolmaestromisionesUNIQUE : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida' 
+                        });
+
+                        var d1 = new Date().toLocaleString()
+
+                        db.rolmaestromisionesUNIQUE.update(parseInt(rol_id),{
+                            fechayhorasubida : d1                            
+                        }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+                        /* guardamos la geo */
+                        navigator.geolocation.getCurrentPosition(guardarCoordenadas); 
+                        function guardarCoordenadas(position) {
+                            var latitud =  position.coords.latitude;
+                            var longitud = position.coords.longitude;
+
+                            var d2 = latitud+'/'+longitud;
+
+
+                            var db = new Dexie("armenta");
+                            db.version(1).stores({
+                                rolmaestromisiones : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida' 
+                            });
+
+                            db.rolmaestromisiones.update(parseInt(rol_id),{
+                                geosubida: d2
+                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+                            var db = new Dexie("armenta");
+                            db.version(1).stores({
+                                rolmaestromisionesUNIQUE : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida' 
+                            });
+                            db.rolmaestromisionesUNIQUE.update(parseInt(rol_id),{
+                                geosubida: d2
+                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+                        }
+
+                        /* fin guardamos la geo */
+
+
+                    }).catch(function (error) {
+                        console.error(error);
+                    });   
+
+                    var db = new Dexie("armenta");
+                    db.version(1).stores({
+                        misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+
+                    });    
+
+                    //buscamos la mision
+                    db.misiones.where({misionidordentrabajo:parseInt(dat4)}).each(function (vw5) {
+
+                        var js1 = vw5.misionrol_maestroid;
+                        var js2 = vw5.misionidordentrabajo;
+                        var js3 = vw5.misionidmarca;
+                        var js4 = vw5.fechainiciomision;
+                        var js5 = vw5.horainiciomision;
+                        var js6 = vw5.geoiniciomision; 
+                        var js7 = vw5.pausasmision;
+                        var js8 = vw5.reiniciosmision;
+                        var js9 = vw5.prcomentarios;
+                        var js10 = vw5.fechaentregamision; 
+                        var js11 = vw5.horaentregamision;
+                        var js12 = vw5.geoentregamision;  
+                        var js13 = vw5.soscausa;
+                        var js14 = vw5.soscomentario;
+
+
+
+                        $.ajax({
+                            type: "POST",
+                            url: 'sincronizar_misiones.php',
+                            data:  {dat1: js1, dat2: js2, dat3: js3, dat4: js4, dat5: js5, dat6: js6, dat7: js7, dat8: js8, dat9: js9, dat10: js10, dat11: js11, dat12: js12, dat13: js13, dat14: js14},
+                            success: function(resp){
+
+                            }
+                        });    
+
+
+                    }).then(function () {
+                        alert('Se ha subido la información.Recuerda que ahora la puedes ver en historial');
+                        //hay que dar tiempo para q guarde en indexDB
+
+
+                    }).catch(function (error) {
+                        console.error(error);
+                    });
+
+
+                    document.getElementById('loader').style.display = "block";
+                    window.scrollTo(0, 0);
+                    setTimeout(function(){
+                        document.getElementById('loader').style.display = "none";
+                        window.location.assign("inicio.html");
+                    },3000);
+
+                }else{
+                    alert('No estás en línea, enciende tus datos o conéctate a una red WIFI');
+                    document.getElementById('loader').style.display = "block";
+                    window.scrollTo(0, 0);
+                    setTimeout(function(){
+                        document.getElementById('loader').style.display = "none";
+                        window.location.assign("inicio.html");
+                    },3000);
+                }
+            }
+
+        </script>
+
+        <!-- Menu Perfil-->
+        <div id="myNav" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <img src="assets/images/logo_nubartforms.jpeg" class="img-fluid logo_nav">
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div id="zona_elementos" class="card card-block" style="border: none; ">
+
+                                <script>
+                                    var user_n = localStorage.getItem('nombre_user');
+                                    var user_f = localStorage.getItem('foto_user');
+                                    var zona = document.getElementById('zona_elementos');
+
+                                    var elemh4 = document.createElement('h6');    
+                                    elemh4.style= 'color:white; background: black; padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;';
+                                    elemh4.innerHTML = user_n+" >> ";
+                                    zona.appendChild(elemh4); 
+
+                                    var elemimg = document.createElement('img');
+                                    elemimg.style= "width: 30vw;";
+                                    elemimg.src = 'data:image/jpg;base64,'+user_f;
+                                    elemimg.setAttribute("class", "img-fluid");    
+                                    elemh4.appendChild(elemimg);   
+
+
+                                </script> 
+
+
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item cred"><a href="credencial.html">CREDENCIAL</a></li>
+                                    <li class="list-group-item hist"><a href="historial.html">HISTORIAL</a></li>
+                                    <li class="list-group-item prog"><a href="programa.html">PROGRAMADO</a></li>
+                                    <li class="list-group-item doc"><a href="documentos.html">DOCUMENTOS</a></li>
+                                    <li class="list-group-item clo"><a href="login.php">CERRAR SESIÓN</a></li>
+                                </ul>
+
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Perfil-->
+        <div id="myNav3" class="overlay" style="background: rgba(0, 0, 0, 0.7);">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav3()">&times;</a>
+            <img src="assets/images/logo_nubartforms.jpeg" class="img-fluid logo_nav">
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="card card-block text-center" style="border: none; background: black;">
+                                <br>
+                                <p><img class="img-fluid"  alt="" src="xd/alerta.png" ></p>
+                                <h4 class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    SALIR POR CAUSA DE<br> FUERZA MAYOR </h4> 
+                                <p class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    selecciona un evento y escribe<br> un comentario explicando.</p> 
+                                <form class="text-center">
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <select name="carlist" form="carform">
+                                                <option selected disabled>  Causa</option>
+                                                <option>Temblor</option>
+                                                <option>Simulacro</option>
+                                                <option>Enfermedad</option>
+                                                <option>Entrega de Carta</option>
+                                                <option>Sin fotos</option>
+                                                <option>Otro</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <input id="text" name="text" type="text" class="textbox" >
+                                        </div>
+                                    </div> 
+                                    <div class="form-group row">
+                                        <div class="col-12">
+                                            <button name="submit" type="submit" class="btn btn-info" style="background: #EA2B2B; border: none;">Registrar Salida</button>
+                                            <br>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

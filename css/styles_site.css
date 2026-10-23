@@ -1,0 +1,18 @@
+@charset "UTF-8";
+
+@font-face {
+  font-family: "OpenSansBold";
+  src: local("OpenSansBold"), url("../fonts/OpenSans-Bold.ttf");
+}
+@font-face {
+  font-family: "OpenSansRegular";
+  src: local("OpenSansRegular"), url("../fonts/OpenSans-Regular.ttf");
+}
+
+body {
+    font-family: "OpenSansRegular";
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "OpenSansBold";
+}

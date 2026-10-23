@@ -1,0 +1,20 @@
+{
+  "name": "RTF",
+  "short_name": "RTF",
+  "icons": [
+   {
+      "src": "assets/images/logo_nubartforms.jpeg",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "login.php",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#3E56C5",
+  "theme_color": "#3f51b5",
+  "description": "RTF",
+  "dir": "ltr",
+  "lang": "en-mx"
+}

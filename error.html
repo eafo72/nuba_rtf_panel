@@ -1,0 +1,22 @@
+<html>
+<div style="position:absolute;z-index:100000">
+    <a onclick="Back()">    
+        <div style="height:100vh;width:100vw;background: #004C99;  /* fallback for old browsers */
+                 background: -webkit-linear-gradient(to right, #0487DE, #004C99);  /* Chrome 10-25, Safari 5.1-6 */
+                 background: linear-gradient(to right, #0487DE, #004C99); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */">
+            <h1 align="center" style="padding-top:40vh;color:white;">Contenido sin descargar</h1>
+            <h4 align="center" style="color:white;">Click para regresar</h4>
+        </div>
+    </a>    
+</div>
+<script src="js/jquery.js"></script>        
+<script src="js/bootstrap.min.js"></script>
+<script>
+    function Back(){
+        var user = localStorage.getItem('user');    
+        var permisos = localStorage.getItem('permisos');
+                
+        window.location.assign("empresa.php?user="+user+"&permisos="+permisos);
+    }
+</script>     
+</html>

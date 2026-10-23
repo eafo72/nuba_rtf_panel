@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+
+    <head>
+
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>RTF</title>
+
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap-grid.min.css">
+
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+        <link href="vendor/css/style.css" rel="stylesheet">
+        <!-- <link rel="manifest" href="manifest.json"> -->
+        <script src="js/jquery.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/dexie.js"></script>    
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+
+    </head>
+
+    <body>
+
+        <!-- top -->
+        <div class="container text-center datos">
+            <img src="xd/perfil_bco.png" class="img-fluid" id="miperfil">
+            <div class="row" >
+                <table style="height: 100px; width: 100%;" class="text-center credencial">
+                    <tbody class="text-center">
+                        <tr >
+                            <td class="align-middle">
+                                <h3>Documentos<br> <span style="font-size: .8em; border-top: solid 1px white;">Importantes</span></h3>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Contenido -->
+
+
+        <div class="container  "  id="programadas" style="">
+            <div class="row">
+                <div class="col-12">
+                    <br>
+                </div>
+                <!--
+<div class="col-6 text-center flecha">
+<i class="fa fa-arrow-circle-o-left pull-right" aria-hidden="true"></i>
+</div>
+<div class="col-6 text-center flecha">
+<i class="fa fa-arrow-circle-o-right pull-left" aria-hidden="true"></i>
+</div>
+-->
+
+            </div>
+            <div class="row " >
+                <br><br>
+                <div id="zone" class="col-12 ">
+                    <br>
+
+                    <script>
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            tienda : 'tiendaid, nombretienda, ubicaciontienda, geotienda, encargadotienda, documentoslista, cadenaidtienda'
+                        });
+
+                        db.tienda.each(function (check) { 
+
+                            var id_tienda  = check.tiendaid;
+                            var documentos = check.documentoslista;
+                            var nombre_tienda = check.nombretienda;
+
+                            if (documentos != ''){
+                                var zona = document.getElementById('zone');
+
+                                var divcard = document.createElement('div');
+                                divcard.setAttribute("class", "card");     
+                                zona.appendChild(divcard);
+
+                                var attr = document.createElement('a');
+                                attr.href = "";     
+                                attr.setAttribute("data-toggle", "modal");
+                                attr.setAttribute("data-target", "#archivos"+id_tienda);
+                                divcard.appendChild(attr);
+
+                                var divcardbody = document.createElement('div');
+                                divcardbody.setAttribute("class", "card-body text-center");     
+                                attr.appendChild(divcardbody);
+
+                                var elemp = document.createElement('p');
+                                elemp.setAttribute("class", "card-text");     
+                                elemp.innerHTML = nombre_tienda;
+                                divcardbody.appendChild(elemp);
+
+                                var elemi = document.createElement('i');
+                                elemi.style = "position: absolute; right:5vw;";     
+                                elemp.appendChild(elemi);
+
+                                var elemib = document.createElement('i');
+                                elemib.setAttribute("class", "fa fa-eye");
+                                elemib.setAttribute("aria-hidden", "true");
+                                elemi.appendChild(elemib);
+
+                                //modal
+                                var divmodalfade = document.createElement('div');
+                                divmodalfade.setAttribute("class", "modal fade");
+                                divmodalfade.id = "archivos"+id_tienda;
+                                divmodalfade.setAttribute("tabindex", "-1");
+                                divmodalfade.setAttribute("role", "dialog");
+                                divmodalfade.setAttribute("aria-labelledby", "myModalLabel");
+                                divmodalfade.style = "z-index:99999;";
+                                zone.appendChild(divmodalfade);
+
+                                var divmodaldialog = document.createElement('div');
+                                divmodaldialog.setAttribute("class", "modal-dialog");
+                                divmodaldialog.setAttribute("role", "document");
+                                divmodalfade.appendChild(divmodaldialog);
+
+                                var divmodalcontent = document.createElement('div');
+                                divmodalcontent.setAttribute("class", "modal-content");
+                                divmodalcontent.style = "background:white";
+                                divmodaldialog.appendChild(divmodalcontent);
+
+                                var divmodalheader = document.createElement('div');
+                                divmodalheader.setAttribute("class", "modal-header");
+                                divmodalcontent.appendChild(divmodalheader);
+
+                                var modalh4 = document.createElement('h4');
+                                modalh4.setAttribute("class", "modal-title");
+                                modalh4.innerHTML = "Documentos:";                            
+                                divmodalheader.appendChild(modalh4);
+
+                                var modalbtn = document.createElement('button');
+                                modalbtn.setAttribute("type", "button");
+                                modalbtn.setAttribute("class", "close");
+                                modalbtn.setAttribute("data-dismiss", "modal");
+                                modalbtn.setAttribute("aria-label", "Close");
+                                divmodalheader.appendChild(modalbtn);
+
+                                var modalspan = document.createElement('span');
+                                modalspan.setAttribute("aria-hidden", "true");
+                                modalspan.innerHTML = "&times;";
+                                modalbtn.appendChild(modalspan);
+
+                                var divmodalbody = document.createElement('div');
+                                divmodalbody.setAttribute("align", "center");
+                                divmodalbody.setAttribute("class", "modal-body");
+                                divmodalbody.style = "padding-top:10px";
+                                divmodalcontent.appendChild(divmodalbody);                       
+                                var subidos = documentos.split(",");    
+                                var size = subidos.length;    
+                                i = 0;
+                                while (i < size-1){
+                                    arch = subidos[i];
+
+                                    var attr = document.createElement('a');
+                                    attr.href = "assets/documentos/"+arch;
+                                    attr.setAttribute("target", "_blank");
+                                    attr.setAttribute("data-toggle", "tooltip");
+                                    attr.setAttribute("data-placement", "top");
+                                    attr.setAttribute("title", "Ver/Descargar");
+                                    attr.style = "font-size:14px;line-height: .5em;";           attr.innerHTML = arch;
+                                    divmodalbody.appendChild(attr);
+
+                                    var brk = document.createElement('br');
+                                    divmodalbody.appendChild(brk);
+
+                                   
+
+                                    i++;
+                                }       
+
+
+
+                            }
+                        }).catch(function (error) {
+                            console.error(error);
+                        }); 
+                    </script>    
+
+                </div> 
+
+            </div>  
+        </div>
+
+
+        <!-- Navigation -->
+        <div class="container-fluid fixed-bottom menu">
+            <div class="row" style="">
+                <div class="col-3 text-center" style=" ">
+                    <a href="precargado_tiendas.html">         
+                        <img src="xd/tiendas.png" class="img-fluid"> 
+                    </a> 
+                </div>
+                <div class="col-3 text-center" style=" ">
+                    <img src="xd/sos.png" class="img-fluid"> 
+                </div>
+                <div class="col-3 text-center " style=" ">
+                    <a href="inicio.html">
+                        <img src="xd/objetivos.png" class="img-fluid"> 
+                    </a>
+                </div>
+                <div class="col-3 text-center active" style=" " onclick="openNav()">
+                    <img src="xd/perfil.png" class="img-fluid"> 
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openNav() {
+                document.getElementById("myNav").style.width = "100%";
+            }
+
+            function closeNav() {
+                document.getElementById("myNav").style.width = "0%";
+            }
+
+            function openNav2() {
+                document.getElementById("myNav2").style.width = "100%";
+            }
+
+            function closeNav2() {
+                document.getElementById("myNav2").style.width = "0%";
+            }
+        </script>
+
+        <!-- Menu Perfil-->
+        <div id="myNav" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <img src="xd/logo_sgm_bc.png" class="img-fluid logo_nav">
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div id="zona_elementos" class="card card-block" style="border: none; ">
+
+                                <script>
+                                    var user_n = localStorage.getItem('nombre_user');
+                                    var user_f = localStorage.getItem('foto_user');
+                                    var zona = document.getElementById('zona_elementos');
+
+                                    var elemh4 = document.createElement('h6');    
+                                    elemh4.style= 'color:white; background: black; padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;';
+                                    elemh4.innerHTML = user_n+" >> ";
+                                    zona.appendChild(elemh4); 
+
+                                    var elemimg = document.createElement('img');
+                                    elemimg.style= "width: 30vw;";
+                                    elemimg.src = 'data:image/jpg;base64,'+user_f;
+                                    elemimg.setAttribute("class", "img-fluid");    
+                                    elemh4.appendChild(elemimg);   
+
+
+                                </script>
+
+
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item cred"><a href="credencial.html">CREDENCIAL</a></li>
+                                    <li class="list-group-item hist"><a href="historial.html">HISTORIAL</a></li>
+                                    <li class="list-group-item prog"><a href="programa.html">PROGRAMADO</a></li>
+                                    <li class="list-group-item doc"><a href="documentos.html">DOCUMENTOS</a></li>
+                                    <li class="list-group-item clo"><a href="login.php">CERRAR SESIÓN</a></li>
+                                </ul>
+
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Reagendar -->
+        <div id="myNav2" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav2()">&times;</a>
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center caja_entrega" >
+                            <h3>SELECCIONA<br>FECHA Y HORA</h3><br>
+                            <form>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+                                        </div>
+                                        <input type="date" name="fecha" class="form-control" >
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+                                        </div>
+                                        <input type="time" name="hora" class="form-control" >
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <br>
+                                    <button name="submit" type="submit" class="btn btn-info">Agendar</button>
+                                </div>
+                            </form>
+                            <br><br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </body>
+
+</html>

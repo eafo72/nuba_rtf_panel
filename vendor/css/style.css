@@ -1,0 +1,360 @@
+
+body {
+   
+    padding-bottom: 13vh;
+}
+
+.intro {
+    padding-top: 15vh;
+}
+
+.hola h3 {
+    color:white;
+}
+
+#name {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid white;
+    outline:none;
+    box-shadow:none;
+}
+
+.login-form placehorlder {
+    color: white !important;
+}
+
+.login-form {
+    color: white;
+}
+
+.form-control::-webkit-input-placeholder { color: white; }  /* WebKit, Blink, Edge */
+.form-control:-moz-placeholder { color: white; }  /* Mozilla Firefox 4 to 18 */
+.form-control::-moz-placeholder { color: white; }  /* Mozilla Firefox 19+ */
+.form-control:-ms-input-placeholder { color: white; }  /* Internet Explorer 10-11 */
+.form-control::-ms-input-placeholder { color: white; }  /* Microsoft Edge */
+
+.menu .row {
+  
+    background: #e4e5ea; 
+    height: 10vh;  
+}
+
+.menu .col-3 {
+  padding-top: 1vh;
+   
+}
+
+.menu img {
+    height: 8vh;
+}
+
+.menu .active {
+    background: white;
+}
+
+.logo_index {
+    max-width: 35vw;
+}
+
+.card-footer {
+    padding-top: 1.7rem;
+}
+
+.card-title h5 {
+     color: #004C99 !important;
+}
+
+.bienvenida h3 {
+    color: #004C99;
+}
+
+.contenido a {
+     color: #6c757d !important;
+    text-decoration: none;
+    
+}
+
+
+.datos {
+  
+    background: #E7E9ED;
+
+    
+}
+
+.datos h3 {
+  color: #394045;
+}
+
+#map {
+    height: 30vh;
+    width: 80vw;
+    margin-left: 5vw;
+   
+}
+
+.google-maps p{
+    text-align: left;
+}
+
+
+ .modal-backdrop
+{
+   
+    opacity:0.8 !important;
+}
+
+.modal {
+     
+      border-radius: 10px !important; 
+}
+
+ .modal-body{
+    padding-top:50px;
+    
+}
+
+ .modal-dialog{
+    margin-top: 30vh;
+    
+}
+
+.modal-content{
+    background: #004C99;
+}
+
+#inicio h5 {
+    color: white;
+}
+
+.modal-body h5 {
+     color: white;
+}
+
+.modal-body p{
+    color:white;
+}
+
+.visitainiciada {
+    padding-top: 3vh;
+}
+
+.visitainiciada .card {
+    background:#E7E9ED;
+   
+    border:none;
+     box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#pestanainiciada {
+    position: fixed;
+    top: 0px;
+    right: 33vw;
+    z-index: 9999;
+}
+
+.btn-info {
+    background: #00ADC4;
+    border: none;
+}
+
+.pestana_objetivo {
+   
+    
+}
+
+.textbox {
+    height: 100px;
+    width: 65vw;
+}
+
+.col-form-label {
+    font-size: 20px;
+    font-weight: bolder;
+}
+
+.caja_entrega{
+    padding-top: 40px;
+    background: #F7F7F7;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.caja_entrega h3 {
+    color: #004C99;
+}
+
+.overlay {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  left: 0;
+background: #004C99;  /* fallback for old browsers */
+background: -webkit-linear-gradient(to right, #0487DE, #004C99);  /* Chrome 10-25, Safari 5.1-6 */
+background: linear-gradient(to right, #0487DE, #004C99); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+  
+  overflow-x: hidden;
+  transition: 0.1s;
+}
+
+.overlay-content {
+  position: relative;
+  top: 15%;
+  width: 100%;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.overlay closebtn {
+ 
+  color: #004C99;
+
+}
+
+.overlay p {
+    color: white;
+}
+
+.overlay a {
+  font-size: 1.5em;
+  color: white;
+    font-weight: bolder;
+}
+
+.overlay .cred {
+  background: #3A569F;
+    
+}
+.overlay  .hist  {
+  background: #CB3366;
+    
+}
+.overlay  .prog {
+  background: #696C71;
+    
+}
+.overlay  .doc {
+  background: #478D51;
+    
+}
+
+.overlay  .clo {
+  background: #18a3dd;
+    
+}
+
+.logo_nav {
+     position: absolute;
+  top: 40px;
+  left: 45px;
+      max-width: 35vw;
+  
+}
+
+.overlay .btn-primary {
+    background:#004C99;
+    border: none;
+    border-radius: 0px;
+    color: white;
+    font-weight: bolder;
+}
+
+.overlay .closebtn {
+  position: absolute;
+  top: 20px;
+  right: 45px;
+  font-size: 60px;
+}
+
+
+
+.credencial {
+background: #5433FF;  /* fallback for old browsers */
+background: -webkit-linear-gradient(to right, #A5FECB, #20BDFF, #5433FF);  /* Chrome 10-25, Safari 5.1-6 */
+background: linear-gradient(to right, #A5FECB, #20BDFF, #5433FF); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+}
+
+.credencial h3 {
+    color:white;
+}
+
+#miperfil {
+    position: absolute;
+    top: 3vh;
+    right: 5vw;
+}
+
+    ul.timeline {
+    list-style-type: none;
+    position: ;
+}
+ul.timeline:before {
+    content: ' ';
+    background: #d4d9df;
+    display: inline-block;
+    position: absolute;
+    left: 29px;
+    width: 2px;
+    height: 100%;
+    z-index: 400;
+}
+ul.timeline > li {
+    margin: 0px 0px;
+    padding-left: 0px;
+    
+}
+ul.timeline > li:before {
+    content: ' ';
+    background: white;
+    display: inline-block;
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid #004C99;
+    left: 20px;
+    width: 20px;
+    height: 20px;
+    z-index: 400;
+}
+
+ul.timeline li a {
+    color: #004C99;
+}
+
+.flecha i {
+   color: #004C99;
+    font-size: 2em;
+}
+
+#programadas .card {
+    background:  #E7E9ED;
+    font-weight: bolder;
+   
+}
+
+#programadas .card i{
+      color: #00ADC4;
+    font-size: 1.5em;
+    margin-top: -.1em;
+}
+
+#programadas .card a {
+     color: black;
+    text-decoration: none;
+    
+    
+}
+
+@media screen and (max-height: 450px) {
+  .overlay a {font-size: 20px}
+  .overlay .closebtn {
+  font-size: 40px;
+  top: 15px;
+  right: 35px;
+  }
+}

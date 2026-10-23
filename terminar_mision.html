@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>RTF</title>
+
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+     <link href="vendor/css/style.css" rel="stylesheet">
+
+</head>
+
+<body id="inicio">
+    
+    <!-- Logos -->
+    <div class="container">
+        <br>
+    <div class="row">
+         <div class="col-6 text-center">
+          <img src="xd/logo_sgm.png" class="img-fluid logo_index">
+        </div>
+         <div class="col-6 text-center">
+          <img src="xd/logo_armenta.png" class="img-fluid logo_index">
+        </div>
+        </div>
+    </div>
+
+ 
+
+  <!-- Page Content -->
+  <div class="container bienvenida">
+      <br>
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h3 class="m-2 mt-4">!Ten un excelente día!</h3>
+        <p class="lead">Estas son tus misiones de hoy</p>
+       <p>14 Julio 2019</p>
+      </div>
+    </div>
+      <br>
+  </div>
+    
+    <div class="container contenido">
+    <div class="row">
+        <div class="col-12 text-center " >
+        <h4>No hay más misiones <br> activas para esta fecha</h4>
+        </div>
+      
+        
+        
+        </div>
+    </div>
+    
+    
+  <!-- Navigation -->
+    <div class="container-fluid fixed-bottom menu">
+      <div class="row" style="">
+      <div class="col-3 text-center" style=" ">
+          <a href="precargado_tiendas.html">         
+                        <img src="xd/tiendas.png" class="img-fluid"> 
+                    </a> 
+          </div>
+            <div class="col-3 text-center" style=" ">
+          <img src="xd/sos.png" class="img-fluid"> 
+          </div>
+               <div class="col-3 text-center active" style=" ">
+          <img src="xd/objetivos.png" class="img-fluid"> 
+          </div>
+               <div class="col-3 text-center" style=" " onclick="openNav()">
+          <img src="xd/perfil.png" class="img-fluid"> 
+          </div>
+        </div>
+    </div>
+    
+    <!-- The Modal -->
+<!-- Modal: modalAbandonedCart-->
+<div class="modal fade right" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true" >
+  <div class="modal-dialog  " role="document">
+    <!--Content-->
+    <div class="modal-content">
+      <!--Header-->
+     
+
+      <!--Body-->
+      <div class="modal-body">
+
+        <div class="row">
+         <div class="col-12 text-center">
+            <h5>¡Que bien que ya llegaste!</h5>
+            </div>
+            <div class="col-12 text-center">
+            <p class="m-3">Recuerda que debes <span style=" color: black;
+    font-weight: bolder;  text-decoration: underline;"> ACTIVAR TU UBICACIÓN</span> para poder continuar.</p>
+            </div>
+        </div>
+      </div>
+
+      <!--Footer-->
+        <div class="modal-footer justify-content-center">
+        <a href="#"  onclick="myFunction()" class="btn btn-info">INICIAR VISITA</a> 
+       <a href="#"  data-dismiss="modal" class="btn btn-info" style="background: gray;">  REGRESAR  </a>
+      </div>
+    </div>
+    <!--/.Content-->
+  </div>
+</div>
+<!-- Modal: modalAbandonedCart-->
+    
+   
+  <script>
+function myFunction() {
+  window.location = "visita_iniciada.html";  
+}
+</script>
+    
+     <script>
+function openNav() {
+  document.getElementById("myNav").style.width = "100%";
+}
+
+function closeNav() {
+  document.getElementById("myNav").style.width = "0%";
+}
+         
+         function openNav2() {
+  document.getElementById("myNav2").style.width = "100%";
+}
+
+function closeNav2() {
+  document.getElementById("myNav2").style.width = "0%";
+}
+</script>
+    
+    <!-- Menu Perfil-->
+<div id="myNav" class="overlay">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <div class="overlay-content">
+    <div class="container">
+      <div class="row">
+        <div class="col-12 text-center">
+          <div class="card card-block" style="border: none; ">
+         <h4 class="" style="color:white; background: black; padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+         Carlos Ramirez<span style="color:black;"> >></span>                                   <i><img class="img-fluid"  alt="" src="xd/promotor.png"  style=" width: 30vw;"></i></h4> 
+              
+          
+      <ul class="list-group list-group-flush">
+    <li class="list-group-item cred"><a href="credencial.html">CREDENCIAL</a></li>
+    <li class="list-group-item hist"><a href="historial.html">HISTORIAL</a></li>
+    <li class="list-group-item prog"><a href="programa.html">PROGRAMADO</a></li>
+          <li class="list-group-item doc"><a href="documentos.html">DOCUMENTOS</a></li>
+            <li class="list-group-item clo"><a href="#">CERRAR SESIÓN</a></li>
+  </ul>
+ 
+              </div>
+
+          </div>
+        </div>
+      </div>
+  </div>
+</div>
+
+  <!-- Bootstrap core JavaScript -->
+ <!-- Bootstrap core JavaScript -->
+ <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+
+</body>
+
+</html>

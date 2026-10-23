@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+    <head>
+
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>RTF</title>
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+        <link href="vendor/css/style.css" rel="stylesheet">
+        <!-- <link rel="manifest" href="manifest.json"> -->
+
+        <!--esto es para la firma-->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="stylesheet" href="css/signature-pad.css">
+        <!-- fin para la firma-->
+
+        <script src="js/jquery.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/dexie.js"></script>    
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+
+    </head>
+
+    <body style="background-color:white">
+
+
+
+
+        <div id="loader" align="center" style="height:100vh;display: none;margin-top:10vh;">
+            <img src="images/loader.gif">  
+            <h6>Cargando...</h6>
+        </div>
+
+
+
+        <div id="cabecera" class="container text-center datos">
+            <div class="row" >
+                <div class="col-12" >
+                    <img src="xd/pestana_iniciada.png" class="img-fluid"  >
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Marcas -->
+        <div class="container visitainiciadaactividad" >
+
+            <br><br>
+            <div align="center">
+                <p id="titulo"></p>
+            </div>    
+            <div class="row text-center" style="margin-left: 3vw; margin-right: 3vw; padding-top: 7vh;" id="elements-zone"></div>
+
+            <div id="firma-zone" style="display:none">
+                <div id="signature-pad" class="signature-pad"><div class="signature-pad--body"><canvas></canvas></div><div class="signature-pad--footer"><div class="description">Firme arriba</div><div class="signature-pad--actions"><div><button type="button" class="button clear" data-action="clear">Borrar</button><button type="button" class="button" data-action="undo">Deshacer</button></div><div><button type="button" class="button save" data-action="save-png" onclick="guardar_firma()">Guardar</button></div></div></div></div>
+            </div>
+
+            <script>
+                var incluir_firma = localStorage.getItem('firma');    
+                if(incluir_firma == 'Si'){
+                    lista = document.getElementById("firma-zone");
+                    lista.style.display = "block";
+                }
+            </script>
+
+
+            <script>
+                var id_rol_maestro =  localStorage.getItem('detalle_mision_idrol');
+                var id_objetivo = localStorage.getItem('detalle_mision_idobjetivo');
+                var nombre_objetivo = localStorage.getItem('detalle_mision_nombreobjetivo');
+                var tipo_objetivo = localStorage.getItem('tipoobjetivo');
+                var meta = localStorage.getItem('meta'); 
+                var entregados = localStorage.getItem('entregados');
+
+                if (tipo_objetivo == 'Venta'){
+
+                    var total = parseInt(entregados);
+
+                    //buscamos en entregables cuantos lleva
+                    var db = new Dexie("armenta");
+                    db.version(1).stores({
+                        entregable : '++entrega_id, entregarolid, entrega_nombre_elemento, entrega_tipo_texto, entrega_tipo_numero, entrega_tipo_fecha, entrega_tipo_hora, entrega_tipo_imagen, entrega_fecha_llegada, entrega_hora_llegada, entregaobjetivoid, entregahoracierre, entregafechacierre, meta_venta'
+                    });
+
+                    db.entregable                    .where({entregarolid:parseInt(id_rol_maestro),entregaobjetivoid:id_objetivo,entrega_nombre_elemento: "Cantidad"})
+                        .each(function (suma) { 
+                        total = total + suma.entrega_tipo_numero
+                    })
+                        .then(function () { 
+
+                        document.getElementById('titulo').innerHTML = 'Objetivo :'+nombre_objetivo+' Meta   :'+total+' de '+meta;
+
+
+                    }).catch(function (error) {
+                        console.error(error);    
+                    }); 
+
+                }
+                if (tipo_objetivo == 'Inventario'){
+                    document.getElementById('titulo').innerHTML = 'Objetivo :'+nombre_objetivo+' Existencia :'+meta;
+                }
+
+                if (tipo_objetivo != 'Venta' && tipo_objetivo != 'Inventario'){
+                    document.getElementById('titulo').innerHTML = 'Objetivo :'+nombre_objetivo; 
+                }   
+
+                var db = new Dexie("armenta");
+                db.version(1).stores({
+                    elementosllegada : 'elementoid, nombreelemento, scriptelemento, name, tipoentrega',
+                    leerelementos : 'id_elemento, nombre_elemento, name, tipo_entrega'});
+                db.leerelementos.clear();
+
+                var data = localStorage.getItem('ids_elementos');
+
+                var conjunto_ids_elementos = data.split("/");
+                var conjunto_ids_elementos_size = conjunto_ids_elementos.length;    
+
+                c = 0;    
+                while (c < conjunto_ids_elementos_size ){    
+                    db.elementosllegada.get(parseInt(conjunto_ids_elementos[c])).then(function (despliega) {
+                        var id_ele = despliega.elementoid; 
+                        var script = despliega.scriptelemento;  
+                        var label = despliega.nombreelemento;
+                        var name = despliega.name;
+                        var tipo_entrega = despliega.tipoentrega;
+
+
+                        //creamos los elementos
+                        var elementsZone = document.getElementById('elements-zone');
+
+                        var divc12 = document.createElement('div');        
+                        divc12.setAttribute("class", "col-12 text-center caja_entrega");
+                        elementsZone.appendChild(divc12);   
+
+                        var etiqueta = document.createElement('h3');
+                        etiqueta.innerHTML = label; 
+                        divc12.appendChild(etiqueta);
+
+                        var salto = document.createElement('br');
+                        divc12.appendChild(salto);
+
+                        var code = document.createElement('div');
+                        code.setAttribute("class", "form-group");
+                        code.innerHTML = script;   
+                        divc12.appendChild(code);
+
+                        if (tipo_entrega == 'Archivo'){
+                            var pvz = document.createElement('div');
+                            pvz.setAttribute("align", "center");
+                            pvz.id = "file-preview-zone";
+                            code.appendChild(pvz);
+                        }
+
+                        var salto = document.createElement('br');
+                        divc12.appendChild(salto);
+
+                        /*guardamos datos de cada elemento en leerelementos*/
+                        var db = new Dexie("armenta");
+                        db.version(1).stores({
+                            leerelementos : 'id_elemento, nombre_elemento, name, tipo_entrega' });
+
+                        db.leerelementos.put({
+                            id_elemento : id_ele,
+                            nombre_elemento : label, 
+                            name : name,
+                            tipo_entrega : tipo_entrega
+
+                        }).catch(function(error) {alert ("Ooops: " + error);});  
+
+
+
+                    }).catch(function (error) {
+                        console.error(error);
+                    });
+
+                    c++;
+                }
+
+            </script>
+            <br><br> 
+
+            <div class="col-12 text-center">
+                <a  href="javascript:void(0)" class="btn btn-info" onclick="guardar()" >ENTREGAR OBJETIVO</a>
+                <br>
+                <br>
+            </div>    
+            <br><br>
+            <script>
+                function readURL(input) {
+
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+
+                        var filePreview = document.createElement('img');
+                        filePreview.id = 'file-preview';
+                        filePreview.setAttribute("class", "img-fluid");
+
+
+                        //e.target.result contents the base64 data from the image uploaded
+                        filePreview.src = e.target.result;
+
+
+                        var previewZone = document.getElementById('file-preview-zone');
+
+                        var elembreak = document.createElement('br');
+                        previewZone.appendChild(elembreak);
+                        previewZone.appendChild(filePreview);
+
+                        //break
+                        var elembreak = document.createElement('br');
+                        previewZone.appendChild(elembreak);
+
+                        //break
+                        var elembreak = document.createElement('br');
+                        previewZone.appendChild(elembreak);
+
+                        guardar_foto();
+                        //boton guardar
+                        //var btnsave = document.createElement('a');
+                        //btnsave.href = "javascript:void(0)";
+                        //btnsave.innerHTML = "Guardar esta foto";
+                        //btnsave.setAttribute("onclick", "guardar_foto()");
+                        // btnsave.setAttribute("class", "btn btn-info");
+                        //previewZone.appendChild(btnsave);
+
+                    }
+                    reader.readAsDataURL(input.files[0]);
+
+
+                }
+
+                function getBase64FromFile(img, callback){
+
+                    let fileReader = new FileReader();
+
+
+                    fileReader.addEventListener('load', function(evt){
+                        callback(fileReader.result);
+                    });
+                    fileReader.readAsDataURL(img.files[0]);
+                }
+
+                function guardar(){
+
+                    //primero vemos si no esta en pausa para que de reiniciar     
+                    var db = new Dexie("armenta");
+                    db.version(1).stores({
+                        misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                    });
+                    var jsXX = localStorage.getItem('idot');
+                    db.misiones.get({misionidordentrabajo:parseInt(jsXX)}).then(function (checkifpause) {
+                        var status = checkifpause.status;
+                        if (status == ""){
+                            //nop
+
+                            //definimos BD para INDEXDB
+                            var db = new Dexie("armenta");
+                            db.version(1).stores({
+                                entregable : '++entrega_id, entregarolid, entrega_nombre_elemento, entrega_tipo_texto, entrega_tipo_numero, entrega_tipo_fecha, entrega_tipo_hora, entrega_tipo_imagen, entrega_fecha_llegada, entrega_hora_llegada, entregaobjetivoid, entregahoracierre, entregafechacierre, meta_venta',
+
+                                leerelementos : 'id_elemento, nombre_elemento, name, tipo_entrega'
+
+                            });
+
+
+                            var data = localStorage.getItem('ids_elementos');
+
+                            var conjunto_ids_elementos = data.split("/");
+                            var conjunto_ids_elementos_size = conjunto_ids_elementos.length;    
+
+                            var w = 0;    
+                            while (w < conjunto_ids_elementos_size ){   
+
+                                db.leerelementos.get(parseInt(conjunto_ids_elementos[w])).then(function (guarda) {    
+
+                                    var id_elemento = guarda.id_elemento;
+                                    var nombre_elemento = guarda.nombre_elemento;
+                                    var id_name = guarda.name;
+                                    var tipo_dato_entrega = guarda.tipo_entrega; 
+
+                                    var jsone = localStorage.getItem('detalle_mision_idrol');
+                                    var js1 = parseInt(jsone);
+
+                                    var js2 = nombre_elemento; 
+                                    var js4 = new Date();
+                                    var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                                    var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+                                    var jssix = localStorage.getItem('detalle_mision_idobjetivo');
+                                    var js6 = parseInt(jssix);
+
+                                    var vacio = "";
+
+                                    var js21 = localStorage.getItem('fecha_inicio_objetivo');
+                                    var js22 = localStorage.getItem('hora_inicio_objetivo');
+
+
+                                    if (tipo_dato_entrega == 'Dato Texto'){
+
+                                        var dato = document.getElementById(id_name).value;
+                                        var js3 = dato;
+
+                                        db.entregable.put({
+                                            entregarolid : js1,
+                                            entrega_nombre_elemento :js2,
+                                            entrega_tipo_texto :js3,
+                                            entrega_tipo_numero : vacio, 
+                                            entrega_tipo_fecha : vacio, 
+                                            entrega_tipo_hora : vacio, 
+                                            entrega_fecha_llegada: js21,
+                                            entrega_hora_llegada: js22,
+                                            entregafechacierre :datestring,
+                                            entregahoracierre :js5,
+                                            entregaobjetivoid :js6
+                                        }).catch(function(error) {alert ("Ooops: " + error);});    
+                                    }
+
+                                    if (tipo_dato_entrega == 'Dato Numero'){
+
+                                        var dato = document.getElementById(id_name).value;
+                                        var js3 = parseInt(dato);
+
+                                        db.entregable.put({
+                                            entregarolid : js1,
+                                            entrega_nombre_elemento :js2,
+                                            entrega_tipo_texto : vacio,
+                                            entrega_tipo_numero :js3,
+                                            entrega_tipo_fecha : vacio, 
+                                            entrega_tipo_hora : vacio, 
+                                            entrega_fecha_llegada: js21,
+                                            entrega_hora_llegada: js22,
+                                            entregafechacierre :datestring,
+                                            entregahoracierre :js5,
+                                            entregaobjetivoid :js6
+                                        }).catch(function(error) {alert ("Ooops: " + error);});      
+                                    }
+
+                                    if (tipo_dato_entrega == 'Dato Numero Inventario'){
+
+                                        var dato = document.getElementById(id_name).value;
+                                        var js3 = parseInt(dato);
+
+                                        db.entregable.put({
+                                            entregarolid : js1,
+                                            entrega_nombre_elemento :js2,
+                                            entrega_tipo_texto : vacio,
+                                            entrega_tipo_numero :js3,
+                                            entrega_tipo_fecha : vacio, 
+                                            entrega_tipo_hora : vacio, 
+                                            entrega_fecha_llegada: js21,
+                                            entrega_hora_llegada: js22,
+                                            entregafechacierre :datestring,
+                                            entregahoracierre :js5,
+                                            entregaobjetivoid :js6
+                                        }).catch(function(error) {alert ("Ooops: " + error);});
+                                    }
+
+                                    if (tipo_dato_entrega == 'Dato Fecha'){
+
+                                        var dato = document.getElementById(id_name).value;
+                                        var js3 = dato;
+
+                                        db.entregable.put({
+                                            entregarolid : js1,
+                                            entrega_nombre_elemento :js2,
+                                            entrega_tipo_texto : vacio,
+                                            entrega_tipo_numero :vacio,
+                                            entrega_tipo_fecha :js3,
+                                            entrega_tipo_hora : vacio, 
+                                            entrega_fecha_llegada: js21,
+                                            entrega_hora_llegada: js22,
+                                            entregafechacierre :datestring,
+                                            entregahoracierre :js5,
+                                            entregaobjetivoid :js6
+                                        }).catch(function(error) {alert ("Ooops: " + error);});     
+
+                                    }
+
+                                    if (tipo_dato_entrega == 'Dato Hora'){    
+
+                                        var dato = document.getElementById(id_name).value;
+                                        var js3 = dato;
+
+                                        db.entregable.put({
+                                            entregarolid : js1,
+                                            entrega_nombre_elemento :js2,
+                                            entrega_tipo_texto : vacio,
+                                            entrega_tipo_numero : vacio,
+                                            entrega_tipo_fecha : vacio,
+                                            entrega_tipo_hora :js3,
+                                            entrega_fecha_llegada: js21,
+                                            entrega_hora_llegada: js22,
+                                            entregafechacierre :datestring,
+                                            entregahoracierre :js5,
+                                            entregaobjetivoid :js6
+                                        }).catch(function(error) {alert ("Ooops: " + error);});  
+                                    }
+                                    /*
+                                    if (tipo_dato_entrega == 'Archivo'){
+
+                                        var file = document.getElementById(id_name);
+
+                                        //convertimos la imagen a base64
+                                        getBase64FromFile(file, function(base64){
+                                            var dato = base64;
+                                            //funcion para hacer mas pequeña una imagen que ya se convirtio a base64
+                                            function resizeImage(base64Str) {
+
+                                                var img = new Image();
+                                                img.src = base64Str;
+                                                var canvas = document.createElement('canvas');
+                                                var MAX_WIDTH = 400;
+                                                var MAX_HEIGHT = 350;
+                                                var width = img.width;
+                                                var height = img.height;
+
+                                                if (width > height) {
+                                                    if (width > MAX_WIDTH) {
+                                                        height *= MAX_WIDTH / width;
+                                                        width = MAX_WIDTH;
+                                                }
+                                                } else {
+                                                    if (height > MAX_HEIGHT) {
+                                                        width *= MAX_HEIGHT / height;
+                                                        height = MAX_HEIGHT;
+                                                    }
+                                                }
+                                                canvas.width = width;
+                                                canvas.height = height;
+                                                var ctx = canvas.getContext('2d');
+                                                ctx.drawImage(img, 0, 0, width, height);
+                                                return canvas.toDataURL();
+                                            }
+
+                                            //convertimos a menos resolucion
+                                            var js3 = resizeImage(dato);
+
+
+                                            db.entregable.put({
+                                                entregarolid : js1,
+                                                entrega_nombre_elemento :js2,
+                                                entrega_tipo_imagen :js3,
+                                                entrega_tipo_numero : vacio,
+                                                entrega_tipo_fecha : vacio, 
+                                                entrega_tipo_hora : vacio, 
+                                                entrega_fecha_llegada: js21,
+                                                entrega_hora_llegada: js22,
+                                                entregafechacierre :datestring,
+                                                entregahoracierre :js5,
+                                                entregaobjetivoid :js6
+                                            }).catch(function(error) {alert ("Ooops: " + error);});  
+
+                                        });
+                                    }
+                                    */
+
+                                }).catch(function (error) {
+                                    console.error(error);
+                                });
+
+                                w++;
+                            } 
+                            //hay que dar tiempo para q guarde en indexDB
+                            document.getElementById('cabecera').style.opacity = "0";
+                            document.getElementById('loader').style.display = "block";
+                            window.scrollTo(0, 0);
+                            setTimeout(function(){
+                                document.getElementById('loader').style.display = "none";
+                                $('#myModal').modal({show:true});     
+
+                            },3000);
+
+                        }else{
+                            //sip
+                            alert('Estás en pausa, primero reinicia');
+
+                        }
+
+                    }).catch(function (error) {
+                        console.error(error);
+                    }); 
+
+                }
+
+                //se ocupa siempre q se saca una foto
+                function guardar_foto(){
+                    var db = new Dexie("armenta");
+                    db.version(1).stores({
+                        entregable : '++entrega_id, entregarolid, entrega_nombre_elemento, entrega_tipo_texto, entrega_tipo_numero, entrega_tipo_fecha, entrega_tipo_hora, entrega_tipo_imagen, entrega_fecha_llegada, entrega_hora_llegada, entregaobjetivoid, entregahoracierre, entregafechacierre, meta_venta'
+                    });    
+
+                    var file = document.getElementById('foto');
+
+                    getBase64FromFile(file, function(base64){
+
+                        var dato = base64;
+                        //funcion para hacer mas pequeña una imagen que ya se convirtio a base64
+                        function resizeImage(base64Str) {
+
+                            var img = new Image();
+                            img.src = base64Str;
+                            var canvas = document.createElement('canvas');
+                            var MAX_WIDTH = 400;
+                            var MAX_HEIGHT = 350;
+                            var width = img.width;
+                            var height = img.height;
+
+                            if (width > height) {
+                                if (width > MAX_WIDTH) {
+                                    height *= MAX_WIDTH / width;
+                                    width = MAX_WIDTH;
+                                }
+                            } else {
+                                if (height > MAX_HEIGHT) {
+                                    width *= MAX_HEIGHT / height;
+                                    height = MAX_HEIGHT;
+                                }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            var ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            return canvas.toDataURL();
+                        }
+
+                        //convertimos a menos resolucion
+                        var js3 = resizeImage(dato);   
+
+                        var jsone = localStorage.getItem('detalle_mision_idrol');
+                        var js1 = parseInt(jsone);
+                        var js2 = "Foto";
+                        //var js3 = base64;
+                        var vacio = "";
+                        var js4 = new Date();
+                        var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                        var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+                        var jssix = localStorage.getItem('detalle_mision_idobjetivo');
+                        var js6 = parseInt(jssix);
+
+                        db.entregable.put({
+                            entregarolid : js1,
+                            entrega_nombre_elemento :js2,
+                            entrega_tipo_imagen :js3,
+                            entrega_tipo_numero : vacio,
+                            entrega_tipo_fecha : vacio, 
+                            entrega_tipo_hora : vacio, 
+                            entregafechacierre :datestring,
+                            entregahoracierre :js5,
+                            entregaobjetivoid :js6
+                        }).catch(function(error) {alert ("Ooops: " + error);});  
+
+                    });
+
+                    //alert ('Foto Guardada');    
+
+                    //hay que dar tiempo para q guarde en indexDB
+                    //document.getElementById('cabecera').style.opacity = "0";
+                    //document.getElementById('loader').style.display = "block";
+                    //window.scrollTo(0, 0);
+                    //setTimeout(function(){
+                    //  document.getElementById('loader').style.display = "none";
+                    //$('#myModal').modal({show:true});       
+                    //window.location.assign("actividad.html");
+                    //},3000);
+
+                }
+
+
+                function guardar_firma(){
+                    if (signaturePad.isEmpty()) {
+                        alert("Por favor realice su firma");
+                    } else {
+                        var dataURL = signaturePad.toDataURL();
+
+                        if (navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") === -1) {
+                            window.open(dataURL);
+                        } else {
+
+                            var db = new Dexie("armenta");
+                            db.version(1).stores({
+                                entregable : '++entrega_id, entregarolid, entrega_nombre_elemento, entrega_tipo_texto, entrega_tipo_numero, entrega_tipo_fecha, entrega_tipo_hora, entrega_tipo_imagen, entrega_fecha_llegada, entrega_hora_llegada, entregaobjetivoid, entregahoracierre, entregafechacierre, meta_venta'
+                            });
+
+                            var jsone = localStorage.getItem('detalle_mision_idrol');
+                            var js1 = parseInt(jsone);
+                            var js2 = "Firma";
+                            var js3 = dataURL; 
+                            var vacio = "";
+                            var js4 = new Date();
+                            var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                            var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+                            var jssix = localStorage.getItem('detalle_mision_idobjetivo');
+                            var js6 = parseInt(jssix);
+
+                            db.entregable.put({
+                                entregarolid : js1,
+                                entrega_nombre_elemento :js2,
+                                entrega_tipo_imagen :js3,
+                                entrega_tipo_numero : vacio,
+                                entrega_tipo_fecha : vacio, 
+                                entrega_tipo_hora : vacio, 
+                                entregafechacierre :datestring,
+                                entregahoracierre :js5,
+                                entregaobjetivoid :js6
+                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+                            alert('Firma guardada.');
+
+                        }
+                    }
+                }
+
+            </script>
+        </div>
+        <div class="container-fluid fixed-bottom menu">
+            <div class="row" style="">
+                <div id="btnpause" class="col-3 text-center" style="" onclick="openNav4()">
+                    <img src="xd/pausa.png" class="img-fluid"> 
+                </div>
+                <div id="btnplay" class="col-3 text-center" style="" onclick="openNav5()">
+                    <img src="xd/reiniciar.png" class="img-fluid"> 
+                </div>
+
+                <div class="col-3 text-center" style=" " onclick="openNav3()">
+                    <img src="xd/sos.png" class="img-fluid"> 
+                </div>
+                <div class="col-3 text-center active" style=" ">
+
+                    <img src="xd/objetivos.png" class="img-fluid"> 
+
+                </div>
+                <div class="col-3 text-center" style=" " onclick="openNav()" >
+                    <img src="xd/perfil.png" class="img-fluid"> 
+                </div>
+            </div>
+        </div>
+
+        <script>
+
+            var db = new Dexie("armenta");
+            db.version(1).stores({
+                misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+            });
+
+            //vemos si esta en pausa la mision
+            //var js1 = localStorage.getItem('idrol');
+            //var js2 = localStorage.getItem('idmarca');
+            var js3 = localStorage.getItem('idot'); 
+            db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkmission) {
+
+                var status = checkmission.status;
+                if (status == ""){
+                    document.getElementById('btnpause').style.display = "block";
+                    document.getElementById('btnplay').style.display = "none";
+                }else{
+                    document.getElementById('btnpause').style.display = "none";
+                    document.getElementById('btnplay').style.display = "block";
+                }
+
+            }).catch(function (error) {
+                console.error(error);
+            });     
+
+
+        </script>
+
+        <div class="modal fade right" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog  " role="document">
+                <!--Content-->
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h5>¡Aviso!</h5>
+                            </div>
+                            <div class="col-12 text-center">
+                                <p class="m-3">Estás entregando el objetivo.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--Footer-->
+                    <div class="modal-footer justify-content-center">
+                        <a href="visita_iniciada_obj.html"  class="btn btn-info">ENTREGAR</a>
+
+
+                    </div>
+                </div>
+                <!--/.Content-->
+            </div>
+        </div>
+
+
+        <script>
+            function openNav() {
+                document.getElementById("myNav").style.width = "100%";
+            }
+
+            function closeNav() {
+                document.getElementById("myNav").style.width = "0%";
+            }
+
+            function openNav2() {
+                document.getElementById("myNav2").style.width = "100%";
+            }
+
+            function closeNav2() {
+                document.getElementById("myNav2").style.width = "0%";
+            }
+
+            function openNav3() {
+                document.getElementById("myNav3").style.width = "100%";
+            }
+
+            function closeNav3() {
+                document.getElementById("myNav3").style.width = "0%";
+            }
+
+            function openNav4() {
+                document.getElementById("myNav4").style.width = "100%";
+            }
+
+            function closeNav4() {
+                document.getElementById("myNav4").style.width = "0%";
+            }
+
+            function openNav5() {
+                document.getElementById("myNav5").style.width = "100%";
+            }
+
+            function closeNav5() {
+                document.getElementById("myNav5").style.width = "0%";
+            }
+        </script>
+
+        <!-- Menu Perfil-->
+        <div id="myNav" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div id="zona_elementos" class="card card-block" style="border: none; ">
+
+                                <script>
+                                    var user_n = localStorage.getItem('nombre_user');
+                                    var user_f = localStorage.getItem('foto_user');
+                                    var zona = document.getElementById('zona_elementos');
+
+                                    var elemh4 = document.createElement('h6');    
+                                    elemh4.style= 'color:white; background: black; padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;';
+                                    elemh4.innerHTML = user_n+" >> ";
+                                    zona.appendChild(elemh4); 
+
+                                    var elemimg = document.createElement('img');
+                                    elemimg.style= "width: 30vw;";
+                                    elemimg.src = 'data:image/jpg;base64,'+user_f;
+                                    elemimg.setAttribute("class", "img-fluid");    
+                                    elemh4.appendChild(elemimg);   
+
+
+                                </script>
+
+
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item cred"><a href="credencial.html">CREDENCIAL</a></li>
+                                    <li class="list-group-item hist"><a href="historial.html">HISTORIAL</a></li>
+                                    <li class="list-group-item prog"><a href="programa.html">PROGRAMADO</a></li>
+                                    <li class="list-group-item doc"><a href="documentos.html">DOCUMENTOS</a></li>
+                                    <li class="list-group-item clo"><a href="login.php">CERRAR SESIÓN</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- sos-->
+        <div id="myNav3" class="overlay" style="background: rgba(0, 0, 0, 0.7);">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav3()">&times;</a>
+            <img src="xd/logo_sgm_bc.png" class="img-fluid logo_nav">
+
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="card card-block text-center" style="border: none; background: black;">
+                                <br>
+                                <p><img class="img-fluid"  alt="" src="xd/alerta.png" ></p>
+                                <h4 class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    SALIR POR CAUSA DE<br> FUERZA MAYOR </h4> 
+                                <p class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    Selecciona un evento y escribe<br> un comentario explicando.</p> 
+
+
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <select id="causa">
+                                            <option selected disabled>  Causa</option>
+                                            <option>Temblor</option>
+                                            <option>Simulacro</option>
+                                            <option>Enfermedad</option>
+                                            <option>Entrega de Carta</option>
+                                            <option>Sin fotos</option>
+                                            <option>Otro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <input id="comments" type="text" class="textbox" >
+                                    </div>
+                                </div> 
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button onclick="sos()" class="btn btn-info" style="background: #EA2B2B; border: none;">Registrar Salida</button>
+                                        <br>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    function sos(){
+                                        closeNav3();
+                                        var jsA = document.getElementById('causa').value;
+                                        var jsB = document.getElementById('comments').value;
+
+                                        var js1 = localStorage.getItem('idrol');
+                                        var js2 = localStorage.getItem('idmarca');
+                                        var js3 = localStorage.getItem('idot');
+                                        var js4 = new Date();
+                                        var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                                        var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+                                        var js6 = "P";
+
+                                        //cerramos la tienda
+
+                                        var db = new Dexie("armenta");
+                                        db.version(1).stores({
+                                            misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                                        });
+
+                                        //buscamos el id de la mision para poder hacer update
+                                        db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkout) {
+                                            var id_mission = checkout.mision_id;
+
+
+                                            db.misiones.update(id_mission,{
+                                                fechaentregamision : datestring,
+                                                horaentregamision: js5,
+                                                soscausa: jsA,
+                                                soscomentario: jsB
+                                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                                        }).catch(function (error) {
+                                            console.error(error);
+                                        }); 
+
+                                        document.getElementById('cabecera').style.opacity = "0";
+                                        document.getElementById('loader').style.display = "block";
+                                        window.scrollTo(0, 0);
+                                        setTimeout(function(){
+                                            window.location.assign('inicio.html');
+                                        },3000);
+
+
+                                    }
+                                </script>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Pausa-->
+        <div id="myNav4" class="overlay" style="background: rgba(0, 0, 0, 0.7);">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav4()">&times;</a>
+            <img src="xd/logo_sgm_bc.png" class="img-fluid logo_nav">
+
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="card card-block text-center" style="border: none; background: black;">
+                                <br>
+                                <p><img class="img-fluid"  alt="" src="xd/alerta.png" ></p>
+                                <h4 class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    PONER EN<br> PAUSA </h4> 
+                                <p class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    Selecciona una causa y escribe<br> un comentario explicando.</p> 
+
+
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <select id="pausa_causa">
+                                            <option selected disabled>  Causa</option>
+                                            <option>Comida</option>
+                                            <option>Malestar</option>
+                                            <option>Documentos</option>
+                                            <option>Otro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <input id="pausa_comentario" type="text" class="textbox" >
+                                    </div>
+                                </div> 
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button onclick="pausa()" class="btn btn-info" style="background: #EA2B2B; border: none;">Registrar Pausa</button>
+                                        <br>
+                                    </div>
+                                </div>
+                                <script>
+                                    function pausa(){
+                                        closeNav4();
+                                        var jsA = document.getElementById('pausa_causa').value;
+                                        var jsB = document.getElementById('pausa_comentario').value;
+
+                                        var js1 = localStorage.getItem('idrol');
+                                        var js2 = localStorage.getItem('idmarca');
+                                        var js3 = localStorage.getItem('idot');
+                                        var js4 = new Date();
+                                        var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                                        var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+                                        var js6 = "P";
+
+                                        //pausamos la tienda
+
+                                        var db = new Dexie("armenta");
+                                        db.version(1).stores({
+                                            misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                                        });
+
+                                        //buscamos el id de la mision para poder hacer update
+                                        db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkpause) {
+                                            var id_mission = checkpause.mision_id;
+                                            var oldpausedata = checkpause.pausasmision;
+                                            var oldcomments = checkpause.prcomentarios;
+
+                                            if (oldpausedata == ""){
+                                                var newpausedata = datestring+"-"+js5+"-"+jsA;
+                                            }else{
+                                                var newpausedata = oldpausedata+"/"+datestring+"-"+js5+"-"+jsA; 
+                                            }
+
+                                            if (oldcomments == ""){
+                                                var newcomments = "P:"+jsB;
+                                            }else{
+                                                var newcomments = oldcomments+"/P:"+jsB;
+                                            }
+
+                                            db.misiones.update(id_mission,{
+                                                pausasmision : newpausedata,
+                                                prcomentarios: newcomments,
+                                                status: "P"
+                                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                                        }).catch(function (error) {
+                                            console.error(error);
+                                        }); 
+
+                                        document.getElementById('cabecera').style.opacity = "0";
+                                        document.getElementById('loader').style.display = "block";
+                                        window.scrollTo(0, 0);
+                                        setTimeout(function(){
+                                            window.location.assign('actividad.html');
+                                        },3000);
+
+
+                                    }
+                                </script>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reiniciar-->
+        <div id="myNav5" class="overlay" style="background: rgba(0, 0, 0, 0.7);">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav5()">&times;</a>
+            <img src="xd/logo_sgm_bc.png" class="img-fluid logo_nav">
+
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="card card-block text-center" style="border: none; background: black;">
+                                <br>
+                                <p><img class="img-fluid"  alt="" src="xd/alerta.png" ></p>
+                                <h4 class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    REINICIAR<br> MISIÓN </h4> 
+                                <p class="" style="color:white;  padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;">
+                                    Bienvenido de vuelta.</p> 
+
+
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <input id="play_comentario" type="text" class="textbox" >
+                                    </div>
+                                </div> 
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button onclick="play()" class="btn btn-info" style="background: #EA2B2B; border: none;">Reanudar Misión</button>
+                                        <br>
+                                    </div>
+                                </div>
+                                <script>
+                                    function play(){
+                                        closeNav5();
+                                        var jsB = document.getElementById('play_comentario').value;
+
+                                        //var js1 = localStorage.getItem('idrol');
+                                        //var js2 = localStorage.getItem('idmarca');
+                                        var js3 = localStorage.getItem('idot');
+                                        var js4 = new Date();
+                                        var datestring = js4.getFullYear() + "-" + ("0"+(js4.getMonth()+1)).slice(-2) + "-" + ("0" + js4.getDate()).slice(-2);
+                                        var js5 = js4.getHours() + ":" + js4.getMinutes() + ":" + js4.getSeconds();
+                                        var js6 = "P";
+
+                                        //reiniciamos la tienda
+
+                                        var db = new Dexie("armenta");
+                                        db.version(1).stores({
+                                            misiones : '++mision_id, misionrol_maestroid, misionidordentrabajo, misionidmarca, fechainiciomision, horainiciomision, geoiniciomision, pausasmision, reiniciosmision, prcomentarios, fechaentregamision, horaentregamision,  geoentregamision, soscausa, soscomentario, status'
+                                        });
+
+                                        //buscamos el id de la mision para poder hacer update
+                                        db.misiones.get({misionidordentrabajo:parseInt(js3)}).then(function (checkplay) {
+
+                                            var id_mission = checkplay.mision_id;
+                                            var oldplaydata = checkplay.reiniciosmision;
+                                            var oldcomments = checkplay.prcomentarios;
+
+                                            if (oldplaydata == ""){
+                                                var newplaydata = datestring+"-"+js5;
+                                            }else{
+                                                var newplaydata = oldplaydata+"/"+datestring+"-"+js5; 
+                                            }
+
+                                            if (oldcomments == ""){
+                                                var newcomments = "R:"+jsB;
+                                            }else{
+                                                var newcomments = oldcomments+"/R:"+jsB;
+                                            }
+
+                                            db.misiones.update(id_mission,{
+                                                reiniciosmision : newplaydata,
+                                                prcomentarios: newcomments,
+                                                status: ""
+                                            }).catch(function(error) {alert ("Ooops: " + error);}); 
+
+
+
+                                        }).catch(function (error) {
+                                            console.error(error);
+                                        }); 
+
+                                        document.getElementById('cabecera').style.opacity = "0";
+                                        document.getElementById('loader').style.display = "block";
+                                        window.scrollTo(0, 0);
+                                        setTimeout(function(){
+                                            window.location.assign('actividad.html');
+                                        },3000);
+
+
+                                    }
+                                </script>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- scripts firma -->
+        <script src="js/signature_pad.umd.js"></script>
+        <script src="js/app_signature.js"></script>
+        <!-- fin scripts firma -->
+    </body>
+</html>
+
+

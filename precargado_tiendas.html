@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+
+    <head>
+
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>RTF</title>
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap-grid.min.css">
+
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+        <link href="vendor/css/style.css" rel="stylesheet">
+        <!-- <link rel="manifest" href="manifest.json"> -->
+        <script src="js/jquery.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/dexie.js"></script>    
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+
+    </head>
+
+    <body>
+        <div align="center" style="margin-top:10vh">
+            <img src="images/loader.gif">  
+            <h6>Cargando...</h6>
+        </div>
+        <script>
+
+            var db = new Dexie("armenta");
+            db.version(1).stores({
+                rolmaestromisiones : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida' 
+            });
+
+
+            var id_usuario = localStorage.getItem('id_user');
+            //hoy
+            var hoy = new Date();
+            var var_hoy = hoy.getFullYear() + "-" + ("0"+(hoy.getMonth()+1)).slice(-2) + "-" + ("0" + hoy.getDate()).slice(-2);
+            var dat1 = "";
+
+            /* buscamos roles del colaborador con la tienda */ db.rolmaestromisiones.where({colaboradoridasignadorol:parseInt(id_usuario), fechayhorasubida:"0000-00-00 00:00:00", fechaprogramadavisitarol:var_hoy}).each(function (despliega) {  
+
+                var id_tienda = despliega.rolidtienda;
+
+                var db = new Dexie("armenta");
+                db.version(1).stores({
+                    tienda : 'tiendaid, nombretienda, ubicaciontienda, geotienda, encargadotienda, documentoslista, cadenaidtienda' 
+                });
+
+
+                /* buscamos geos tiendas */    
+                db.tienda.get(parseInt(id_tienda)).then(function (check) {
+
+                    dat1 = check.geotienda+"*"+dat1;    
+
+
+                    localStorage.setItem('geotiendasdia', dat1); 
+
+
+                }).catch(function (error) {
+                    console.error(error);
+                });  
+
+            }).catch(function (error) {
+                console.error(error);
+            });     
+
+
+            setTimeout(function(){
+                window.location.assign("tiendas.html");
+            },1000);
+        </script>
+
+    </body>
+</html>        

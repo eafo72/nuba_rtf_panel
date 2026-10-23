@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+
+    <head>
+
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>RTF</title>
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap-grid.min.css">
+
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+        <link href="vendor/css/style.css" rel="stylesheet">
+        <!-- <link rel="manifest" href="manifest.json"> -->
+        <script src="js/jquery.js"></script>
+        <script src="js/app.js"></script>
+        <script src="js/dexie.js"></script>    
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script>
+            function diasDelMesYAñoActual() {
+                var fecha = new Date();
+                return new Date(fecha.getFullYear(), fecha.getMonth() + 1, 0).getDate();
+            }
+
+            function mes_sig(){
+                if (localStorage.getItem("prog_fechainicial") === null && localStorage.getItem("prog_fechafinal") === null) {
+                    var date = new Date();
+                }else{
+                    var fecfin = localStorage.getItem("prog_fechafinal");
+                    var date = new Date(fecfin);   
+                    //le quitamos 15 dias para q no falle en febrero
+                    date.setDate(date.getDate() -15);
+                     
+                }
+
+                // Añadimos un mes
+                date.setMonth(date.getMonth() + 1);
+
+                var primerDia = new Date(date.getFullYear(), date.getMonth(), 1);
+                var fecini = primerDia.getFullYear() + "-" + ("0"+(primerDia.getMonth()+1)).slice(-2) + "-" + ("0" + primerDia.getDate()).slice(-2);
+
+                var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);   
+                var fecfin = ultimoDia.getFullYear() + "-" + ("0"+(ultimoDia.getMonth()+1)).slice(-2) + "-" + ("0" + ultimoDia.getDate()).slice(-2);
+
+                localStorage.setItem('prog_fechainicial',fecini);
+                localStorage.setItem('prog_fechafinal',fecfin);
+
+                window.location.assign('programa.html');
+
+
+
+            }
+
+            function mes_ant(){
+                if (localStorage.getItem("prog_fechainicial") === null && localStorage.getItem("prog_fechafinal") === null) {
+                    var date = new Date();
+                }else{
+                    var fecfin = localStorage.getItem("prog_fechafinal");
+                    var date = new Date(fecfin);    
+                    //le quitamos 15 dias para q no falle en febrero
+                    date.setDate(date.getDate() -15);
+                    
+                    
+                    
+                }
+
+                // quitamos un mes
+                date.setMonth(date.getMonth() - 1);
+                
+
+                var primerDia = new Date(date.getFullYear(), date.getMonth(), 1);
+                var fecini = primerDia.getFullYear() + "-" + ("0"+(primerDia.getMonth()+1)).slice(-2) + "-" + ("0" + primerDia.getDate()).slice(-2);
+
+                var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);   
+                var fecfin = ultimoDia.getFullYear() + "-" + ("0"+(ultimoDia.getMonth()+1)).slice(-2) + "-" + ("0" + ultimoDia.getDate()).slice(-2);
+
+                localStorage.setItem('prog_fechainicial',fecini);
+                localStorage.setItem('prog_fechafinal',fecfin);
+
+                window.location.assign('programa.html');
+
+
+
+            }
+
+
+        </script>
+
+    </head>
+
+    <body>
+
+        <!-- top -->
+        <div class="container text-center datos">
+            <img src="xd/perfil_bco.png" class="img-fluid" id="miperfil">
+            <div class="row" >
+                <table style="height: 100px; width: 100%;" class="text-center credencial">
+                    <tbody class="text-center">
+                        <tr >
+                            <td class="align-middle">
+                                <h3>
+                                    <span style="font-size: .8em; border-top: solid 1px white;">Programa</span>
+                                </h3>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Contenido -->
+
+
+        <div class="container  "  id="" style="">
+
+            <div class="row">
+                <div class="col-12">
+                    <br>
+                    <h1 align="center" id="mes"></h1>
+                </div>
+
+                <div class="col-6 text-center flecha">
+                    <a href="javascript:void(0)" onclick="mes_ant()">
+                        <i class="fa fa-arrow-circle-o-left pull-right" aria-hidden="true"></i>
+                    </a>    
+                </div>
+                <div class="col-6 text-center flecha">
+                    <a href="javascript:void(0)" onclick="mes_sig()">
+                        <i class="fa fa-arrow-circle-o-right pull-left" aria-hidden="true"></i>
+                    </a>    
+                </div>
+                <div class="col-12">
+                    <br>
+                </div>
+            </div>
+
+
+
+            <div class="row " >
+                <div class="col-12 ">
+
+                    <ul id="lista" class="timeline">
+
+
+                        <script>
+                            if (localStorage.getItem("prog_fechainicial") === null && localStorage.getItem("prog_fechafinal") === null) {
+
+                                var date = new Date();
+                                var primerDia = new Date(date.getFullYear(), date.getMonth(), 1);
+                                var fecini = primerDia.getFullYear() + "-" + ("0"+(primerDia.getMonth()+1)).slice(-2) + "-" + ("0" + primerDia.getDate()).slice(-2);
+
+                                var ultimoDia = new Date(date.getFullYear(), date.getMonth() + 1, 0);   
+                                var fecfin = ultimoDia.getFullYear() + "-" + ("0"+(ultimoDia.getMonth()+1)).slice(-2) + "-" + ("0" + ultimoDia.getDate()).slice(-2);
+
+
+
+                            }else{
+                                var fecini = localStorage.getItem("prog_fechainicial")
+                                var fecfin = localStorage.getItem("prog_fechafinal");
+                                var date = new Date(fecfin);
+                            }
+
+
+                            var este_year = date.getFullYear();
+                            var mes_numero = date.getMonth();
+                            if(mes_numero == 0){
+                                mes_letra = 'Enero';
+                            }if(mes_numero == 1){
+                                mes_letra = 'Febrero';
+                            }if(mes_numero == 2){
+                                mes_letra = 'Marzo';
+                            }if(mes_numero == 3){
+                                mes_letra = 'Abril';
+                            }if(mes_numero == 4){
+                                mes_letra = 'Mayo';
+                            }if(mes_numero == 5){
+                                mes_letra = 'Junio';
+                            }if(mes_numero == 6){
+                                mes_letra = 'Julio';
+                            }if(mes_numero == 7){
+                                mes_letra = 'Agosto';
+                            }if(mes_numero == 8){
+                                mes_letra = 'Septiembre';
+                            }if(mes_numero == 9){
+                                mes_letra = 'Octubre';
+                            }if(mes_numero == 10){
+                                mes_letra = 'Noviembre';
+                            }if(mes_numero == 11){
+                                mes_letra = 'Diciembre';
+                            }
+                            var titulo = document.getElementById('mes').innerHTML = mes_letra+" "+este_year;
+
+
+
+                            var id_usuario = localStorage.getItem('id_user');
+
+                            var db = new Dexie("armenta");
+                            db.version(1).stores({
+                                rolmaestromisionesUNIQUE : 'rolmaestroid, rolmarcaid, rolidtienda, rolidordentrabajo, fechahoracreacionvisitarol, fechaprogramadavisitarol, horaprogramadavisitarol, usuarioidcreadorrol, colaboradoridasignadorol, fechayhorasubida, geosubida'
+                            });
+
+                            /*buscamos el rango de fechas */    
+                            db.rolmaestromisionesUNIQUE.where('fechaprogramadavisitarol').between(fecini,fecfin,true,true).each(function (despliega) { 
+
+
+                                var fecha_rol = despliega.fechaprogramadavisitarol;
+                                var id_tienda = despliega.rolidtienda;
+                                var id_colaborador = despliega.colaboradoridasignadorol;
+                                var f_h_subida = despliega.fechayhorasubida; 
+                                
+                                var hoy = new Date();
+                                var var_hoy = hoy.getFullYear() + "-" + ("0"+(hoy.getMonth()+1)).slice(-2) + "-" + ("0" + hoy.getDate()).slice(-2); 
+                                
+                                
+                                if(id_colaborador == id_usuario && f_h_subida == "0000-00-00 00:00:00" && fecha_rol != var_hoy){
+
+                                    /* solo enseñamos los roles del colaborador */
+
+                                    var db = new Dexie("armenta");
+                                    db.version(1).stores({
+                                        tienda : 'tiendaid, nombretienda, ubicaciontienda, geotienda, encargadotienda, documentoslista, cadenaidtienda'
+                                    });
+
+                                    db.tienda.get({tiendaid:parseInt(id_tienda)}).then(function (check) { 
+
+                                        var nombre_tienda = check.nombretienda;     
+
+
+
+                                        var Zone = document.getElementById('lista');
+
+                                        var elemli = document.createElement('li');    
+                                        Zone.appendChild(elemli);
+
+                                        var elemh4 = document.createElement('h6');    
+                                        elemh4.innerHTML = fecha_rol;
+                                        elemli.appendChild(elemh4);
+
+                                        var br = document.createElement('br');    
+                                        elemli.appendChild(br);
+                                        elemli.appendChild(br);
+
+                                        var divcard = document.createElement('div');  
+                                        divcard.setAttribute("class", "card");  
+                                        elemli.appendChild(divcard);
+
+                                        var divcardbody = document.createElement('div');  
+                                        divcardbody.setAttribute("class", "card-body");  
+                                        divcard.appendChild(divcardbody);
+
+                                        var parr = document.createElement('p');  
+                                        parr.setAttribute("class", "card-text");  
+                                        parr.innerHTML = nombre_tienda;
+                                        divcardbody.appendChild(parr);
+
+                                        var it = document.createElement('i');  
+                                        it.style.position = "absolute";  
+                                        it.style.right = "5vw";      
+                                        parr.appendChild(it);
+
+                                        var imagen = document.createElement('img');  
+                                        imagen.src = "xd/nocheck.png";  
+                                        it.appendChild(imagen);    
+
+                                        elemli.appendChild(br);
+
+
+                                    }).catch(function (error) {
+                                        console.error(error);
+                                    });     
+
+                                }
+
+                            }).catch(function (error) {
+                                console.error(error);
+                            });     
+
+
+                        </script>
+                    </ul>
+                </div> 
+
+            </div>  
+        </div>
+
+
+        <!-- Navigation -->
+        <div class="container-fluid fixed-bottom menu">
+            <div class="row" style="">
+                <div class="col-3 text-center" style=" ">
+                    <a href="precargado_tiendas.html">         
+                        <img src="xd/tiendas.png" class="img-fluid"> 
+                    </a> 
+                </div>
+                <div class="col-3 text-center" style=" ">
+                    <img src="xd/sos.png" class="img-fluid"> 
+                </div>
+                <div class="col-3 text-center " style=" ">
+                    <a href="inicio.html">
+                        <img src="xd/objetivos.png" class="img-fluid"> 
+                    </a>
+                </div>
+                <div class="col-3 text-center active" style=" " onclick="openNav()">
+                    <img src="xd/perfil.png" class="img-fluid"> 
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openNav() {
+                document.getElementById("myNav").style.width = "100%";
+            }
+
+            function closeNav() {
+                document.getElementById("myNav").style.width = "0%";
+            }
+
+            function openNav2() {
+                document.getElementById("myNav2").style.width = "100%";
+            }
+
+            function closeNav2() {
+                document.getElementById("myNav2").style.width = "0%";
+            }
+        </script>
+
+        <!-- Menu Perfil-->
+        <div id="myNav" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <img src="xd/logo_sgm_bc.png" class="img-fluid logo_nav">
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                           <div id="zona_elementos" class="card card-block" style="border: none; ">
+                                                                
+                                <script>
+                                    var user_n = localStorage.getItem('nombre_user');
+                                    var user_f = localStorage.getItem('foto_user');
+                                    var zona = document.getElementById('zona_elementos');
+                                    
+                                    var elemh4 = document.createElement('h6');    
+                                    elemh4.style= 'color:white; background: black; padding-top: 10px;padding-bottom: 10px; 0px; margin:0px;';
+                                    elemh4.innerHTML = user_n+" >> ";
+                                    zona.appendChild(elemh4); 
+                                    
+                                    var elemimg = document.createElement('img');
+                                    elemimg.style= "width: 30vw;";
+                                    elemimg.src = 'data:image/jpg;base64,'+user_f;
+                                    elemimg.setAttribute("class", "img-fluid");    
+                                    elemh4.appendChild(elemimg);   
+                                
+                                
+                                </script>
+
+
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item cred"><a href="credencial.html">CREDENCIAL</a></li>
+                                    <li class="list-group-item hist"><a href="historial.html">HISTORIAL</a></li>
+                                    <li class="list-group-item prog"><a href="programa.html">PROGRAMADO</a></li>
+                                    <li class="list-group-item doc"><a href="documentos.html">DOCUMENTOS</a></li>
+                                    <li class="list-group-item clo"><a href="login.php">CERRAR SESIÓN</a></li>
+                                </ul>
+
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Reagendar -->
+        <div id="myNav2" class="overlay">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav2()">&times;</a>
+            <div class="overlay-content">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12 text-center caja_entrega" >
+                            <h3>SELECCIONA<br>FECHA Y HORA</h3><br>
+                            <form>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+                                        </div>
+                                        <input type="date" name="fecha" class="form-control" >
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fa fa-clock-o" aria-hidden="true"></i></span>
+                                        </div>
+                                        <input type="time" name="hora" class="form-control" >
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <br>
+                                    <button name="submit" type="submit" class="btn btn-info">Agendar</button>
+                                </div>
+                            </form>
+                            <br><br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </body>
+
+</html>
